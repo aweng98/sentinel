@@ -14,10 +14,14 @@
       <sourceFolder url="file://$MODULE_DIR$/src/main/scala" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/scala" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/scala" isTestSource="true" />
     </content>
-    <orderEntry type="inheritedJdk" />
+    <orderEntry type="jdk" jdkName="1.7" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="akka-actor_2.10-2.2.3" level="application" />
+    <orderEntry type="library" name="scalatest_2.10-2.0" level="application" />
     <orderEntry type="library" name="scala-library" level="application" />
+    <orderEntry type="library" name="casbah-alldep_2.10-2.6.2" level="application" />
   </component>
 </module>
 

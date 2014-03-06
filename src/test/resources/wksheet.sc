@@ -29,7 +29,11 @@ val marco = builder.withId(UUID.fromString("edef9656-66ee-4550-bd4b-5c81a280fa45
                    .build()
 
 println(marco)
+
+
 val md = MessageDigest.getInstance("SHA-256")
+
+
 
 val digest = md.digest(saltToBytes(175).toArray)
 bytesToHexString(digest)
@@ -44,5 +48,7 @@ creds.getApiKey
 val grantPerm = Grant.action
 
 println(grantPerm.name)
+
+
 var perms: Set[Action] = Set()
 perms + Edit.action
