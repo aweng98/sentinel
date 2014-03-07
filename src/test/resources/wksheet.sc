@@ -43,7 +43,7 @@ val creds = new Credentials("marc", Credentials.hash("zekret", 175), 175)
 
 creds.saltToString
 creds.hashedPassword
-creds.getApiKey
+creds.apiKey
 
 val grantPerm = Grant.action
 

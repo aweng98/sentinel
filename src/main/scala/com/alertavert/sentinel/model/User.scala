@@ -75,7 +75,23 @@ class User() {
       case false => "Disabled"
     }
 
-    s"[$userId] $firstName $lastName  ($enabled)"
+    s"[$userId] $firstName $lastName ($enabled)"
+  }
+
+
+  def canEqual(other: Any): Boolean = other.isInstanceOf[User]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: User =>
+      (that canEqual this) &&
+        idEquals(_id, that._id) &&
+        _credentials.username == that._credentials.username
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(_id, _credentials)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
 
