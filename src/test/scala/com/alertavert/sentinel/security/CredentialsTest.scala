@@ -34,4 +34,19 @@ class CredentialsTest extends UnitSpec {
     assert(bobsCreds != jillsCreds)
   }
 
+  they must "have different salts and API keys, if created independently" in {
+    val credsOne = Credentials.createCredentials("Bob", "password")
+    val credsTwo = Credentials.createCredentials("Bob", "password")
+    assert(credsOne.salt != credsTwo.salt)
+    assert(credsOne.apiKey != credsTwo.apiKey)
+  }
+
+  "API key" can "be recovered, given the right credentials" in {
+    val creds = Credentials.createCredentials("Alice", "foobarwaz")
+    val salt = creds.salt
+
+    val sameCreds = new Credentials("Alice", Credentials.hash("foobarwaz", salt), salt)
+    assert(creds.apiKey == sameCreds.apiKey)
+  }
+
 }
