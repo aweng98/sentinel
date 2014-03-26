@@ -1,7 +1,8 @@
 package com.alertavert.sentinel.model
 
-import java.util.{Date, UUID}
+import java.util.Date
 import com.alertavert.sentinel.security.Credentials
+import com.mongodb.casbah.Imports.ObjectId
 
 /**
  * The main core class of the system, models a user of the system.
@@ -14,36 +15,41 @@ import com.alertavert.sentinel.security.Credentials
  */
 
 class User() {
-  private var firstName = ""
-  private var lastName = ""
-  private var credentials: Credentials = Credentials.emptyCredentials
-  private var id: UUID = UUID.randomUUID()
-  private var created: Date = new Date()
-  private var createdBy: UUID = null
-  private var active: Boolean = false
-  private var lastSeen: Date = new Date()
-
-  override def toString: String = {
-    val status = if (active) "active" else "disabled"
-    s"[$id] $firstName $lastName ($status)"
-  }
+  private var _id: Option[ObjectId] = None
+  private var _firstName: String = _
+  private var _lastName: String = _
+  private var _credentials: Credentials = Credentials.emptyCredentials
+  private var _created: Date = _
+  private var _createdBy: Option[ObjectId] = None
+  private var _active: Boolean = _
+  private var _lastSeen: Date = _
 
   // A number of "getter" methods to retrieve values for this User
-  def userid = id
-  def name = s"$firstName $lastName"
-  def createdAt = created
-  def creator = createdBy
-  def seenAt = lastSeen
-  def isActive = active
+  def id = _id
+  def firstName = _firstName
+  def lastName = _lastName
+  def created = _created
+  def createdBy= _createdBy
+  def isActive = _active
+  def lastSeen = _lastSeen
 
-  def checkCredentials(that: Credentials) = credentials == that
+  def getCredentials = _credentials
+
+  def checkCredentials(that: Credentials) = _credentials == that
 
   def activate() {
-    active = true
+    _active = true
   }
 
   def disable() {
-    active = false
+    _active = false
+  }
+
+  /**
+   * Updates the 'last seen' field, recording that the user was active at the moment this method was called
+   */
+  def updateActivity() {
+    this._lastSeen = new Date()
   }
 
   /**
@@ -51,24 +57,56 @@ class User() {
    *
    * @param newPassword the plain text password, will be used to generate a new Credentials object,
    *                    that will store it hashed
+   * @return the newly created credentials (which will contain the newly generated API key and salt)
    */
-  def resetPassword(newPassword: String) {
-    credentials = Credentials.createCredentials(credentials.username, newPassword)
+  def resetPassword(newPassword: String): Unit = {
+    _credentials = Credentials.createCredentials(_credentials.username, newPassword)
+    _credentials
   }
 
+  // TODO: add toString() with the JSON representation of this User
+  override def toString = {
+    val userId = _id match {
+      case None => ""
+      case Some(x) => x toString
+    }
+    val enabled = _active match {
+      case true => "Active"
+      case false => "Disabled"
+    }
+
+    s"[$userId] $firstName $lastName ($enabled)"
+  }
+
+
+  def canEqual(other: Any): Boolean = other.isInstanceOf[User]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: User =>
+      (that canEqual this) &&
+        idEquals(_id, that._id) &&
+        _credentials.username == that._credentials.username
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(_id, _credentials)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
 }
 
 object User {
 
   class Builder(val first: String, val last: String = "") {
-    var id = UUID.randomUUID()
+    var id: Option[ObjectId] = None
     var credentials: Option[Credentials] = None
-    var created_by: UUID = null
+    var created_by: Option[ObjectId] = None
     var created = new Date()
-    var active: Boolean = false
+    var active = false
+    var lastSeen = new Date()
 
-    def withId(id: UUID): Builder = {
-      this.id = id
+    def withId(id: ObjectId): Builder = {
+      this.id = Some(id)
       this
     }
 
@@ -77,8 +115,8 @@ object User {
       this
     }
 
-    def createdBy(userId: UUID) = {
-      this.created_by = userId
+    def createdBy(userId: ObjectId) = {
+      this.created_by = Some(userId)
       this
     }
 
@@ -92,17 +130,23 @@ object User {
       this
     }
 
+    def lastSeenAt(lastSeen: Date) = {
+      this.lastSeen = lastSeen
+      this
+    }
+
     def build(): User = {
       val user = new User()
-      user.id = id
-      user.firstName = first
-      user.lastName = last
-      user.credentials = credentials match {
+      user._id = id
+      user._firstName = first
+      user._lastName = last
+      user._credentials = credentials match {
         case None => Credentials.emptyCredentials
         case Some(_) => credentials get
       }
-      user.createdBy = created_by
-      user.created = created
+      user._createdBy = created_by
+      user._created = created
+      user._lastSeen = lastSeen
       if (active) user.activate()
       user
     }

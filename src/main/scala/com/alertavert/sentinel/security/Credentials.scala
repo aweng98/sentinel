@@ -22,17 +22,17 @@ class Credentials(val username: String,
                   val salt: Long) {
 
 
-  private val apiKey: Array[Byte] = createApiKey()
+  private val _apiKey: Array[Byte] = createApiKey()
 
   /** Returns the API key as a base-64 encoded string */
-  def getApiKey = Credentials.base64Encoder.encode(apiKey)
+  def apiKey = Credentials.base64Encoder.encode(_apiKey)
 
   /**
    * Creates an API key from the hashed password and salt
    *
    * @return a pseudo-random API key in Base64 encoding
    */
-  def createApiKey() = {
+  private def createApiKey() = {
     Credentials.md.reset
     Credentials.md.update(hashedPassword getBytes)
     Credentials.md.update(saltToBytes)
