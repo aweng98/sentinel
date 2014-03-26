@@ -32,15 +32,15 @@ class Organization(val name: String) {
 
   // TODO: use JSON repr
   override def toString = {
-    val _id = id match {
+    val id_ = id match {
       case None => ""
       case Some(x) => x toString
     }
-    val _active = active match {
+    val active_ = active match {
       case true => "Active"
       case false => "Disabled"
     }
-    s"[$_id] $name ($_active)"
+    s"[$id_] $name ($active_)"
   }
 
 }
@@ -48,7 +48,7 @@ class Organization(val name: String) {
 
 object Organization {
   class Builder(val name: String) {
-    val _org = new Organization(name)
+    private val _org = new Organization(name)
     _org.created = new Date()
 
     def withId(id: ObjectId): Builder = {
@@ -61,7 +61,7 @@ object Organization {
       this
     }
 
-    def setActive(active: Boolean) = {
+    def setActive(active: Boolean = true) = {
       if (active) _org.activate() else _org.disable()
       this
     }
@@ -76,7 +76,7 @@ object Organization {
     }
   }
 
-  val EmptyOrg = new Organization("empty org")
+  val EmptyOrg = new Organization("")
 
   def builder(org_name: String): Builder = new Builder(org_name)
 }

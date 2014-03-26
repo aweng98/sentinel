@@ -4,7 +4,7 @@
  * Created by marco on 2/10/14.
  */
 import com.alertavert.sentinel.model._
-import com.alertavert.sentinel.security.Credentials
+import com.alertavert.sentinel.security.{Edit, Grant, Action, Credentials}
 import java.security.MessageDigest
 import java.util.UUID
 def saltToBytes(salt: Long): Array[Byte] = {

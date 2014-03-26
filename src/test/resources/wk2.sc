@@ -1,4 +1,6 @@
-import com.alertavert.sentinel.model.{Edit, Action}
+import com.alertavert.sentinel.model.Edit
+import com.alertavert.sentinel.security.{Edit, Action}
+
 object foo {
   var perms = scala.collection.mutable.Set[Action]()
   def baz() {
