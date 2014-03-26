@@ -13,8 +13,8 @@ trait UserDao {
   def remove(userId: ObjectId): Boolean
   def update(userId: ObjectId, user: User): Boolean
 
-  def update(user: User) = user.id match {
-    case None => throw new DbException("Cannot update a User without a valid ID")
-    case Some(x) => this.update(user.id, user)
-  }
+//  def update(user: User) = user.id match {
+//    case None => throw new DbException("Cannot update a User without a valid ID")
+//    case Some(x) => this.update(user.id, user)
+//  }
 }

@@ -1,5 +1,8 @@
 package com.alertavert.sentinel.model
 
+import org.bson.types.ObjectId
+import java.util.Date
+
 /**
  * Models an Organization
  *
@@ -14,19 +17,66 @@ package com.alertavert.sentinel.model
  */
 class Organization(val name: String) {
 
+  var id: Option[ObjectId] = None
+  var created_by: User = _
+  var created: Date = _
+  var active: Boolean = false
+
+  def activate() {
+    active = true
+  }
+
+  def disable() {
+    active = false
+  }
+
+  // TODO: use JSON repr
+  override def toString = {
+    val _id = id match {
+      case None => ""
+      case Some(x) => x toString
+    }
+    val _active = active match {
+      case true => "Active"
+      case false => "Disabled"
+    }
+    s"[$_id] $name ($_active)"
+  }
+
 }
 
 
 object Organization {
-  class Builder {
-    var name: String = _
+  class Builder(val name: String) {
+    val _org = new Organization(name)
+    _org.created = new Date()
+
+    def withId(id: ObjectId): Builder = {
+      _org.id = Some(id)
+      this
+    }
+
+    def createdBy(user: User) = {
+      _org.created_by = user
+      this
+    }
+
+    def setActive(active: Boolean) = {
+      if (active) _org.activate() else _org.disable()
+      this
+    }
+
+    def created(when: Date) = {
+      _org.created = when
+      this
+    }
 
     def build: Organization = {
-      new Organization(name)
+      _org
     }
   }
 
   val EmptyOrg = new Organization("empty org")
 
-  def builder: Builder = new Builder
+  def builder(org_name: String): Builder = new Builder(org_name)
 }
