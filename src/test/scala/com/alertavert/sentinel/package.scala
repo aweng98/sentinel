@@ -7,6 +7,6 @@ import org.scalatest._
  */
 package object sentinel {
 
-  abstract class UnitSpec extends FlatSpec with Matchers with
-  OptionValues with Inside with Inspectors
+  abstract class UnitSpec extends FlatSpec with Matchers with OptionValues with Inside with Inspectors
+
 }

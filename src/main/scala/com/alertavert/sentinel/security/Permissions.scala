@@ -1,6 +1,5 @@
-package com.alertavert.sentinel.model
+package com.alertavert.sentinel.security
 
-import com.alertavert.sentinel.errors.NotAllowedException
 import java.util.UUID
 
 /**
