@@ -1,5 +1,9 @@
 # Git Ignore file for Sentinel (Scala) Project
 
+# IntelliJ specific dirs
 out/
 .idea/
+*.iml
+
+target/
 
