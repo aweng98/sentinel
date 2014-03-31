@@ -1,8 +1,11 @@
 package com.alertavert.sentinel.model
 
+//import language.postfixOps
 import java.util.Date
+
 import com.alertavert.sentinel.security.Credentials
 import com.mongodb.casbah.Imports.ObjectId
+import com.alertavert.sentinel.persistence.HasId
 
 /**
  * The main core class of the system, models a user of the system.
@@ -14,7 +17,7 @@ import com.mongodb.casbah.Imports.ObjectId
  * @since 0.1
  */
 
-class User() {
+class User() extends HasId {
   private var _id: Option[ObjectId] = None
   private var _firstName: String = _
   private var _lastName: String = _
@@ -24,8 +27,14 @@ class User() {
   private var _active: Boolean = _
   private var _lastSeen: Date = _
 
+  // Implementation of HasId trait
+  override def id = _id
+
+  override def setId(id: ObjectId) {
+    this._id = Some(id)
+  }
+
   // A number of "getter" methods to retrieve values for this User
-  def id = _id
   def firstName = _firstName
   def lastName = _lastName
   def created = _created

@@ -45,6 +45,7 @@ class CredentialsTest extends UnitSpec {
     val creds = Credentials.createCredentials("Alice", "foobarwaz")
     val salt = creds.salt
 
+    // To retrieve the API key, I need the three pieces of information: Username, Password & Salt:
     val sameCreds = new Credentials("Alice", Credentials.hash("foobarwaz", salt), salt)
     assert(creds.apiKey == sameCreds.apiKey)
   }

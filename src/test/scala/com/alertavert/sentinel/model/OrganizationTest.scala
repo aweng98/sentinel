@@ -5,7 +5,8 @@ import org.bson.types.ObjectId
 
 
 /**
- * Created by marco on 3/26/14.
+ * Unit tests for Organization model
+ *
  */
 class OrganizationTest extends UnitSpec {
 
@@ -35,7 +36,7 @@ class OrganizationTest extends UnitSpec {
 
   it can "have an ID assigned, and its string repr will reflect that" in new OrgBuilder {
     val org_id = new ObjectId
-    val org = builder withId(org_id) setActive() build
+    val org = builder withId org_id setActive() build
 
     assert(org_id === org.id.get)
     val name = builder.name
