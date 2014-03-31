@@ -1,5 +1,6 @@
 package com.alertavert.sentinel.security
 
+//import language.postfixOps
 import java.security.{SecureRandom, MessageDigest}
 
 /**
@@ -33,9 +34,9 @@ class Credentials(val username: String,
    * @return a pseudo-random API key in Base64 encoding
    */
   private def createApiKey() = {
-    Credentials.md.reset
+    Credentials.md.reset()
     Credentials.md.update(hashedPassword getBytes)
-    Credentials.md.update(saltToBytes)
+    Credentials.md update saltToBytes
     Credentials.md.digest
   }
 

@@ -1,7 +1,8 @@
 package com.alertavert.sentinel.model
 
-import org.bson.types.ObjectId
+import com.mongodb.casbah.Imports.ObjectId
 import java.util.Date
+import com.alertavert.sentinel.persistence.HasId
 
 /**
  * Models an Organization
@@ -15,9 +16,15 @@ import java.util.Date
  * delete the org, if that permission is granted.
  *
  */
-class Organization(val name: String) {
+class Organization(val name: String) extends HasId {
 
-  var id: Option[ObjectId] = None
+  private var _id: Option[ObjectId] = None
+
+  override def id: Option[ObjectId] = _id
+  override def setId(id: ObjectId) {
+    this._id = Some(id)
+  }
+
   var created_by: User = _
   var created: Date = _
   var active: Boolean = false
@@ -52,7 +59,7 @@ object Organization {
     _org.created = new Date()
 
     def withId(id: ObjectId): Builder = {
-      _org.id = Some(id)
+      _org.setId(id)
       this
     }
 
