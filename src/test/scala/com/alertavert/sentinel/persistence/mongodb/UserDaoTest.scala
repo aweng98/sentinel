@@ -8,23 +8,20 @@ import com.alertavert.sentinel.UnitSpec
 
 class UserDaoTest extends UnitSpec with BeforeAndAfter {
 
-  val dao = UserDao.create("mongodb:///sentinel-test")
+  val dao = UserDao("mongodb:///sentinel-test")
 
   before {
-    // assume(dao.userCollection.getCount() == 0, "User collection for tests has not been cleared")
-  }
-
-  after {
-    // dao.userCollection dropCollection
+    dao.userCollection dropCollection()
+    assume(dao.userCollection.getCount() == 0, "User collection for tests has not been cleared")
   }
 
   trait CreatedBy {
     val oid = new ObjectId
   }
 
-  "when connectiong to a default mongo, we" should "get a valid connection" in {
+  "when connecting to a default mongo, we" should "get a valid connection" in {
     val dbUri = "mongodb://localhost:27017/sentinel_test"
-    val dao = UserDao.create(dbUri)
+    val dao = UserDao(dbUri)
     assert(dao != null)
   }
 

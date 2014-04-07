@@ -4,14 +4,12 @@ import language.postfixOps
 import com.alertavert.sentinel.model.User
 import com.alertavert.sentinel.persistence.DAO
 import com.mongodb.casbah.Imports._
-import com.mongodb.casbah.{Imports, MongoCollection, MongoURI}
+import com.mongodb.casbah.{MongoCollection, MongoURI}
 import com.mongodb.casbah.commons.TypeImports.ObjectId
 import java.util.Date
 import com.alertavert.sentinel.security.Credentials
 
-class UserDao(val mongo: MongoConnection, val dbName: String) extends DAO[User] {
-
-  val userCollection: MongoCollection = mongo.getDB(dbName)(UserDao.USER_COLLECTION)
+class UserDao(val userCollection: MongoCollection) extends DAO[User] {
 
   override def find(id: ObjectId): Option[User] = userCollection.findOne(
     MongoDBObject("_id" -> id)) match {
@@ -56,14 +54,21 @@ class UserDao(val mongo: MongoConnection, val dbName: String) extends DAO[User] 
 object UserDao {
 
   val USER_COLLECTION = "users"
+  var instance: UserDao = _
 
   // TODO: should I just use a Singleton here?
-  def create(uri: String): UserDao = {
+  // TODO: use a DataAccessManager as a Factory for all the DAOs
+  private def create(uri: String) {
     val mongoUri = MongoURI(uri)
     val dbName = mongoUri.database.getOrElse(throw new IllegalArgumentException("MongoDB URI must" +
       " specify a database name (use: mongodb://[[host][:port]]/database"))
     val mongoConn = MongoConnection(mongoUri)
-    new UserDao(mongoConn, dbName)
+    instance = new UserDao(mongoConn.getDB(dbName)(UserDao.USER_COLLECTION))
+  }
+
+  def apply(uri: String = "mongod:///test"): UserDao = instance match {
+    case null => create(uri); instance
+    case _ => instance
   }
 
   def serializeCredentials(credentials: Credentials) = MongoDBObject(
