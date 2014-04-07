@@ -3,8 +3,7 @@ package com.alertavert.sentinel.persistence.mongodb
 import org.scalatest._
 import com.alertavert.sentinel.model.User
 import org.bson.types.ObjectId
-
-abstract class UnitSpec extends FlatSpec with Matchers with OptionValues with Inside with Inspectors
+import com.alertavert.sentinel.UnitSpec
 
 
 class UserDaoTest extends UnitSpec with BeforeAndAfter {
@@ -12,11 +11,11 @@ class UserDaoTest extends UnitSpec with BeforeAndAfter {
   val dao = UserDao.create("mongodb:///sentinel-test")
 
   before {
-    assume(dao.userCollection.getCount() == 0, "User collection for tests has not been cleared")
+    // assume(dao.userCollection.getCount() == 0, "User collection for tests has not been cleared")
   }
 
   after {
-    dao.userCollection dropCollection
+    // dao.userCollection dropCollection
   }
 
   trait CreatedBy {
@@ -33,6 +32,16 @@ class UserDaoTest extends UnitSpec with BeforeAndAfter {
     val user = User.builder("bob", "foo") createdBy(oid) build()
     val uid = dao << user
     assert (uid != null)
+  }
+
+  it should "preserve the data" in new CreatedBy {
+    val user = User.builder("Dan", "Dude") createdBy(oid) hasCreds("dandude", "abcfedead",
+      1234) build()
+    val uid = dao << user
+    val retrievedUser = dao.find(uid).getOrElse(fail("No user found for the given OID"))
+    assert(user.firstName === retrievedUser.firstName)
+    assert(user.lastName === retrievedUser.lastName)
+    assert(user.getCredentials === retrievedUser.getCredentials)
   }
 
   "when saving an existing user, we" should "get the same OID" in new CreatedBy {

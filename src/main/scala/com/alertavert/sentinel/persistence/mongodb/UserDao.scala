@@ -4,19 +4,20 @@ import language.postfixOps
 import com.alertavert.sentinel.model.User
 import com.alertavert.sentinel.persistence.DAO
 import com.mongodb.casbah.Imports._
-import com.mongodb.casbah.{MongoCollection, MongoURI}
-import com.mongodb.casbah.commons.ValidBSONType.ObjectId
+import com.mongodb.casbah.{Imports, MongoCollection, MongoURI}
 import com.mongodb.casbah.commons.TypeImports.ObjectId
 import java.util.Date
+import com.alertavert.sentinel.security.Credentials
 
-/**
- * Created by marco on 3/30/14.
- */
 class UserDao(val mongo: MongoConnection, val dbName: String) extends DAO[User] {
 
   val userCollection: MongoCollection = mongo.getDB(dbName)(UserDao.USER_COLLECTION)
 
-  override def find(id: ObjectId): Option[User] = ???
+  override def find(id: ObjectId): Option[User] = userCollection.findOne(
+    MongoDBObject("_id" -> id)) match {
+      case None => None
+      case Some(item) => Some(UserDao.deserialize(item))
+    }
 
   /**
    * Removes the object whose ID matches, if any.
@@ -27,28 +28,15 @@ class UserDao(val mongo: MongoConnection, val dbName: String) extends DAO[User] 
    */
   override def remove(id: ObjectId): Boolean = ???
 
-  override def upsert(item: User): ObjectId = {
-    val userObj = MongoDBObject(
-        "first" -> item.firstName,
-        "last" -> item.lastName,
-        // TODO: add credentials
-        "active" -> item.isActive,
-        "last_seen" -> item.lastSeen,
-        "created_at" -> item.created,
-        "created_by" -> item.createdBy.getOrElse(throw new IllegalArgumentException("Cannot save " +
-          "a user without a 'created_by' value (it must have been created by another authorized " +
-          "user)"))
-    )
-    item.id match {
-      case None =>
-      case Some(x) => userObj += "_id" -> x
-    }
-    val writeResult = userCollection += userObj
+  override def upsert(user: User): ObjectId = {
+    val item = UserDao.serialize(user)
+    val writeResult = userCollection += item
     val cmdResult = writeResult.getLastError()
     // TODO: create app-specific exception and throw, with better error message
     if (! cmdResult.ok()) throw new RuntimeException("Save failed: " + cmdResult.getErrorMessage)
-    userObj.as[ObjectId] ("_id")
+    item.as[ObjectId] ("_id")
   }
+
 
   /**
    * Returns a list of all the items.
@@ -60,15 +48,7 @@ class UserDao(val mongo: MongoConnection, val dbName: String) extends DAO[User] 
   override def findAll(limit: Int, offset: Int): Iterable[User] = {
     for {
       user <- userCollection find() toIterable
-    } yield deserialize(user)
-  }
-
-  def deserialize(item: MongoDBObject): User = {
-    (User.builder(item.as[String] ("first"), item.as[String] ("last"))
-        withId item._id.getOrElse(null)
-        createdBy item.as[ObjectId]("created_by")
-        wasCreatedOn item.as[Date]("created_at")
-        lastSeenAt item.as[Date]("last_seen")) build
+    } yield UserDao.deserialize(user)
   }
 }
 
@@ -84,5 +64,42 @@ object UserDao {
       " specify a database name (use: mongodb://[[host][:port]]/database"))
     val mongoConn = MongoConnection(mongoUri)
     new UserDao(mongoConn, dbName)
+  }
+
+  def serializeCredentials(credentials: Credentials) = MongoDBObject(
+      "username" -> credentials.username,
+      "password" -> credentials.hashedPassword,
+      "salt" -> credentials.salt
+    )
+
+  def deserializeCredentials(item: MongoDBObject, builder: User.Builder) =
+    builder.hasCreds(item.as[String]("username"), item.as[String]("password"),
+                     item.as[Long]("salt"))
+
+  def serialize(user: User): MongoDBObject = {
+    val userObj = MongoDBObject(
+      "first" -> user.firstName,
+      "last" -> user.lastName,
+      "credentials" -> serializeCredentials(user.getCredentials),
+      "active" -> user.isActive,
+      "last_seen" -> user.lastSeen,
+      "created_at" -> user.created,
+      "created_by" -> user.createdBy.getOrElse(null)
+    )
+    user.id match {
+      case None =>
+      case Some(x) => userObj += "_id" -> x
+    }
+    userObj
+  }
+
+  def deserialize(item: MongoDBObject): User = {
+    val builder = User.builder(item.as[String]("first"), item.as[String]("last"))
+    (deserializeCredentials(item.as[BasicDBObject]("credentials"),
+      builder) withId item._id.getOrElse(throw new IllegalStateException("All DB items should " +
+          "have a valid _id - missing for user [" + builder.credentials.get.username + "]"))
+      createdBy item.as[ObjectId]("created_by")
+      wasCreatedOn item.as[Date]("created_at")
+      lastSeenAt item.as[Date]("last_seen")).build()
   }
 }

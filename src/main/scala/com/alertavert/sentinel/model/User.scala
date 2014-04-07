@@ -115,7 +115,7 @@ object User {
     var lastSeen = new Date()
 
     def withId(id: ObjectId): Builder = {
-      this.id = Some(id)
+      if (id != null) this.id = Some(id)
       this
     }
 
