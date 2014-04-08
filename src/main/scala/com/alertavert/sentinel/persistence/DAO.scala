@@ -1,6 +1,6 @@
 package com.alertavert.sentinel.persistence
 
-import com.alertavert.sentinel.model.User
+import com.alertavert.sentinel.model.{Organization, User}
 import com.mongodb.casbah.Imports.ObjectId
 
 /**
@@ -56,3 +56,6 @@ trait DAO[T <: HasId] {
    */
   def findAll(limit: Int = 0, offset: Int = 0): Iterable[T]
 }
+
+abstract class UserDao extends DAO[User]
+abstract class OrganizationDao extends DAO[Organization]

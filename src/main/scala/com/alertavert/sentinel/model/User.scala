@@ -124,6 +124,11 @@ object User {
       this
     }
 
+    def hasCreds(creds: Credentials) = {
+      credentials = Some(creds)
+      this
+    }
+
     def createdBy(userId: ObjectId) = {
       this.created_by = Some(userId)
       this
