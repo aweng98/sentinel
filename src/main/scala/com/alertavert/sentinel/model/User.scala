@@ -115,12 +115,17 @@ object User {
     var lastSeen = new Date()
 
     def withId(id: ObjectId): Builder = {
-      this.id = Some(id)
+      if (id != null) this.id = Some(id)
       this
     }
 
     def hasCreds(username: String, hashedPassword: String, salt: Long) = {
       credentials = Some(new Credentials(username, hashedPassword, salt))
+      this
+    }
+
+    def hasCreds(creds: Credentials) = {
+      credentials = Some(creds)
       this
     }
 
