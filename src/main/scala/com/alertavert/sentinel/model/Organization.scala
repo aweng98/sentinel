@@ -26,7 +26,7 @@ class Organization(val name: String) extends HasId {
   }
 
   var created_by: User = _
-  var created: Date = _
+  var created: Date = new Date()
   var active: Boolean = false
 
   def activate() {
@@ -50,6 +50,21 @@ class Organization(val name: String) extends HasId {
     s"[$id_] $name ($active_)"
   }
 
+
+  def canEqual(other: Any): Boolean = other.isInstanceOf[Organization]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: Organization =>
+      (that canEqual this) &&
+        _id == that._id &&
+        name == that.name
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(_id, name)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
 }
 
 

@@ -52,18 +52,22 @@ class MongoUserDao(val userCollection: MongoCollection) extends MongoDao[User](u
       wasCreatedOn item.as[Date]("created_at")
       lastSeenAt item.as[Date]("last_seen")).build()
   }
-
 }
 
 
 object MongoUserDao {
-
   private val USER_COLLECTION = "users"
   private var instance: MongoUserDao = _
 
   def apply(): MongoUserDao = instance match {
-    case null => if (DataAccessManager isReady) instance = new MongoUserDao(
-      DataAccessManager.db(USER_COLLECTION)); instance
+    case null => {
+      if (DataAccessManager isReady) {
+        instance = new MongoUserDao(DataAccessManager.db(USER_COLLECTION))
+      } else {
+        throw new IllegalStateException("DataAccessManager not initialized")
+      }
+      instance
+    }
     case _ => instance
   }
 }

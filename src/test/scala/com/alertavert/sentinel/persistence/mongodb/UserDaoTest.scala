@@ -3,11 +3,10 @@ package com.alertavert.sentinel.persistence.mongodb
 import org.scalatest._
 import com.alertavert.sentinel.model.User
 import org.bson.types.ObjectId
-import com.alertavert.sentinel.UnitSpec
 import com.alertavert.sentinel.persistence.{DAO, DataAccessManager}
 
 
-class UserDaoTest extends UnitSpec[User] with BeforeAndAfter {
+class UserDaoTest extends UnitSpec with BeforeAndAfter {
 
   var dao: DAO[User] = _
 
