@@ -11,7 +11,7 @@ class UserDaoTest extends UnitSpec with BeforeAndAfter {
   var dao: DAO[User] = _
 
   before {
-    DataAccessManager.init("mongodb:///test")
+    DataAccessManager.init("mongodb:///user-test")
     dao = MongoUserDao()
     dao.asInstanceOf[MongoUserDao].collection.drop()
     assume(dao.asInstanceOf[MongoUserDao].collection.count() == 0, "Collection should be empty " +

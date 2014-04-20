@@ -14,13 +14,13 @@ class OrganizationDaoTest extends UnitSpec with BeforeAndAfter {
   var dao: DAO[Organization] = _
 
   trait OrgCreator {
-    val admin = User.builder("admin") createdBy(new ObjectId) build()
+    val admin = User.builder("admin") createdBy new ObjectId build()
     val userDao = MongoUserDao()
     admin.setId(userDao << admin)
   }
 
   before {
-    DataAccessManager.init("mongodb:///test")
+    DataAccessManager.init("mongodb:///orgs-test")
     dao = MongoOrganizationDao()
     dao.asInstanceOf[MongoOrganizationDao].collection.drop()
     assume(dao.asInstanceOf[MongoOrganizationDao].collection.count() == 0, "Collection should be empty " +

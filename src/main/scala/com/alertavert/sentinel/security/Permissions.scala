@@ -1,6 +1,8 @@
 package com.alertavert.sentinel.security
 
-import java.util.UUID
+import com.alertavert.sentinel.persistence.HasId
+import org.bson.types.ObjectId
+import java.util.Date
 
 /**
  * Created by marco on 2/23/14.
@@ -20,46 +22,60 @@ class ManageSystem extends Action {
 }
 
 object ManageSystem {
-  val action = new ManageSystem
+  def apply(): Action = new ManageSystem
 }
 
 class Create extends Action {
 }
 
 object Create {
-  val action = new Create
+  def apply(): Action = new Create
 }
 
 class Grant extends ManageSystem {
 }
 
 object Grant {
-  val action = new Grant
+  def apply(): Action = new Grant
 }
 
 class Edit extends Action{
 }
 
 object Edit {
-  val action = new Edit
+  def apply(): Action = new Edit
 }
 
 class Delete extends Action {
 }
 
 object Delete {
-  val action = new Delete
+  def apply(): Action = new Delete
 }
 
 class View extends Action {
 }
 
 object View extends Action {
-  val action = new View
+  def apply(): Action = new View
 }
 
-trait Asset {
-  val id = UUID.randomUUID()
+trait Asset extends HasId {
+  private var id_ = Some(new ObjectId())
+
+  var path: String = s"/asset/$id"
+
+  var ownerId: ObjectId = _
+
+  var createdBy = ownerId
+
+  var createdAt: Date = new Date
+
+  def id = id_
+
+  def setId(id: ObjectId) {
+    id_ = Some(id)
+  }
 }
 
 class Resource extends Asset {
