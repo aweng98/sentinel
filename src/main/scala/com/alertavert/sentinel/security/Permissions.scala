@@ -1,12 +1,9 @@
 package com.alertavert.sentinel.security
 
-import com.alertavert.sentinel.persistence.HasId
+import com.alertavert.sentinel.persistence.{HasCreator, HasId}
 import org.bson.types.ObjectId
 import java.util.Date
 
-/**
- * Created by marco on 2/23/14.
- */
 
 trait Action {
   def name = {
@@ -60,28 +57,27 @@ object View extends Action {
   def apply(): Action = new View
 }
 
-trait Asset extends HasId {
-  private var id_ = Some(new ObjectId())
+trait Asset extends HasId with HasCreator {
 
-  var path: String = s"/asset/$id"
-
+  /** Note that the ``owner`` of an ``asset`` may not necessarily be the ``creator`` */
   var ownerId: ObjectId = _
 
-  var createdBy = ownerId
+  /** The unique path associated with the asset */
+  def path = s"/owner/$ownerId/asset/$id"
 
-  var createdAt: Date = new Date
-
-  def id = id_
-
-  def setId(id: ObjectId) {
-    id_ = Some(id)
-  }
 }
 
 class Resource extends Asset {
-  var allowedActions: Set[Action] = Set()
+  val allowedActions: Set[Action] = Set()
 }
 
+/**
+ * A ``permission`` defines an action that can be performed (eg, ``edit``) on a Resource.
+ * Permissions are immutable.
+ *
+ * @param action
+ * @param resource
+ */
 class Permission(val action: Action, val resource: Resource) {
 
 }

@@ -46,7 +46,7 @@ class OrganizationTest extends UnitSpec {
   "An empty org" must "not have an ID or a name" in {
     val emptyOrg = Organization.EmptyOrg
     assert(emptyOrg.id === None)
-    assert(emptyOrg.name === "")
+    assert(emptyOrg.name === "NewCo")
   }
 
 }

@@ -5,7 +5,7 @@ import java.util.Date
 
 import com.alertavert.sentinel.security.Credentials
 import com.mongodb.casbah.Imports.ObjectId
-import com.alertavert.sentinel.persistence.HasId
+import com.alertavert.sentinel.persistence.{HasCreator, HasId}
 
 /**
  * The main core class of the system, models a user of the system.
@@ -17,28 +17,16 @@ import com.alertavert.sentinel.persistence.HasId
  * @since 0.1
  */
 
-class User() extends HasId {
-  private var _id: Option[ObjectId] = None
+class User() extends HasId with HasCreator {
   private var _firstName: String = _
   private var _lastName: String = _
   private var _credentials: Credentials = Credentials.emptyCredentials
-  private var _created: Date = _
-  private var _createdBy: Option[ObjectId] = None
   private var _active: Boolean = _
   private var _lastSeen: Date = _
-
-  // Implementation of HasId trait
-  override def id = _id
-
-  override def setId(id: ObjectId) {
-    this._id = Some(id)
-  }
 
   // A number of "getter" methods to retrieve values for this User
   def firstName = _firstName
   def lastName = _lastName
-  def created = _created
-  def createdBy= _createdBy
   def isActive = _active
   def lastSeen = _lastSeen
 
@@ -75,7 +63,7 @@ class User() extends HasId {
 
   // TODO: add toString() with the JSON representation of this User
   override def toString = {
-    val userId = _id match {
+    val userId = id match {
       case None => ""
       case Some(x) => x toString
     }
@@ -93,13 +81,13 @@ class User() extends HasId {
   override def equals(other: Any): Boolean = other match {
     case that: User =>
       (that canEqual this) &&
-        idEquals(_id, that._id) &&
+        idEquals(id, that.id) &&
         _credentials.username == that._credentials.username
     case _ => false
   }
 
   override def hashCode(): Int = {
-    val state = Seq(_id, _credentials)
+    val state = Seq(id, _credentials)
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
@@ -107,15 +95,15 @@ class User() extends HasId {
 object User {
 
   class Builder(val first: String, val last: String = "") {
-    var id: Option[ObjectId] = None
+    var id: ObjectId = _
     var credentials: Option[Credentials] = None
-    var created_by: Option[ObjectId] = None
+    var created_by: ObjectId = null
     var created = new Date()
     var active = false
     var lastSeen = new Date()
 
     def withId(id: ObjectId): Builder = {
-      if (id != null) this.id = Some(id)
+      this.id = id
       this
     }
 
@@ -130,7 +118,7 @@ object User {
     }
 
     def createdBy(userId: ObjectId) = {
-      this.created_by = Some(userId)
+      this.created_by = userId
       this
     }
 
@@ -151,15 +139,15 @@ object User {
 
     def build(): User = {
       val user = new User()
-      user._id = id
+      user.setId(id)
       user._firstName = first
       user._lastName = last
       user._credentials = credentials match {
         case None => Credentials.emptyCredentials
         case Some(_) => credentials get
       }
-      user._createdBy = created_by
-      user._created = created
+      user.createdBy = created_by
+      user.createdAt = created
       user._lastSeen = lastSeen
       if (active) user.activate()
       user
