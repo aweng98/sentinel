@@ -5,9 +5,6 @@ import com.mongodb.casbah.commons.MongoDBObject
 import org.bson.types.ObjectId
 import java.util.Date
 
-/**
- * Created by marco on 4/20/14.
- */
 trait CreatorSerializer[E <: HasCreator] extends MongoSerializer[E] {
 
   abstract override def serialize(createdItem: E): MongoDBObject = {
