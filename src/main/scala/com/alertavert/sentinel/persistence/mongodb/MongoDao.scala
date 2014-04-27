@@ -5,6 +5,7 @@ import com.alertavert.sentinel.persistence.{HasId, DAO}
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.MongoCollection
 import com.mongodb.casbah.commons.TypeImports.ObjectId
+import com.alertavert.sentinel.errors.DbException
 
 abstract class MongoDao[T <: HasId](val collection: MongoCollection) extends DAO[T] with
     MongoSerializer[T] {
@@ -31,7 +32,7 @@ abstract class MongoDao[T <: HasId](val collection: MongoCollection) extends DAO
     val cmdResult = writeResult getLastError
 
     // TODO: create app-specific exception and throw, with better error message
-    if (! cmdResult.ok()) throw new RuntimeException("Save failed: " + cmdResult.getErrorMessage)
+    if (! cmdResult.ok()) throw new DbException("Save failed: " + cmdResult.getErrorMessage)
     item.as[ObjectId] ("_id")
   }
 
@@ -48,6 +49,3 @@ abstract class MongoDao[T <: HasId](val collection: MongoCollection) extends DAO
     } yield deserialize(item)
   }
 }
-
-
-

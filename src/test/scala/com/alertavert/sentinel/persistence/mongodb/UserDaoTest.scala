@@ -19,7 +19,7 @@ class UserDaoTest extends UnitSpec with BeforeAndAfter {
   }
 
   trait CreatedBy {
-    val oid = new ObjectId
+    val creator = User.builder("Joe", "Schmoe") withId new ObjectId build
   }
 
   "when connecting to a default mongo, we" should "get a valid connection" in {
@@ -29,13 +29,13 @@ class UserDaoTest extends UnitSpec with BeforeAndAfter {
   }
 
   "when saving a valid user, we" should "get a valid OID" in new CreatedBy {
-    val user = User.builder("bob", "foo") createdBy oid build()
+    val user = User.builder("bob", "foo") createdBy creator build()
     val uid = dao << user
     assert (uid != null)
   }
 
   it should "preserve the data" in new CreatedBy {
-    val user = User.builder("Dan", "Dude") createdBy oid hasCreds("dandude", "abcfedead",
+    val user = User.builder("Dan", "Dude") createdBy creator hasCreds("dandude", "abcfedead",
       1234) build()
     val uid = dao << user
     val retrievedUser = dao.find(uid).getOrElse(fail("No user found for the given OID"))
@@ -45,7 +45,7 @@ class UserDaoTest extends UnitSpec with BeforeAndAfter {
   }
 
   "when saving an existing user, we" should "get the same OID" in new CreatedBy {
-    val user = User.builder("Joe", "blast") createdBy oid build()
+    val user = User.builder("Joe", "blast") createdBy creator build()
     val uid = new ObjectId
     user.setId(uid)
     val newUid = dao << user
@@ -56,11 +56,10 @@ class UserDaoTest extends UnitSpec with BeforeAndAfter {
     assert(uid === anUid)
   }
 
-  "when saving many users, we" should "get them all back" in {
-    val oid = new ObjectId
-    val users = List(User.builder("alice") createdBy oid build(),
-      User.builder("bob") createdBy oid build(),
-      User.builder("charlie") createdBy oid build())
+  "when saving many users, we" should "get them all back" in new CreatedBy {
+    val users = List(User.builder("alice") createdBy creator build(),
+      User.builder("bob") createdBy creator build(),
+      User.builder("charlie") createdBy creator build())
 
     users.foreach(dao << _)
     dao.findAll() map(_.firstName) should contain allOf ("alice", "bob", "charlie")

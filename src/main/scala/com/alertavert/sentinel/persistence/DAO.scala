@@ -41,8 +41,8 @@ trait DAO[T <: HasId] {
   def remove(id: ObjectId): Boolean
 
   def -=(item: T) {
-    item id match {
-      case None => false
+    item.id match {
+      case None =>
       case Some(obj_id) => remove(obj_id)
     }
   }

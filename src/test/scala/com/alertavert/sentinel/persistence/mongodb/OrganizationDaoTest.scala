@@ -14,7 +14,7 @@ class OrganizationDaoTest extends UnitSpec with BeforeAndAfter {
   var dao: DAO[Organization] = _
 
   trait OrgCreator {
-    val admin = User.builder("admin") createdBy new ObjectId build()
+    val admin = User.builder("admin") build()
     val userDao = MongoUserDao()
     admin.setId(userDao << admin)
   }

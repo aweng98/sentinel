@@ -1,9 +1,9 @@
 package com.alertavert.sentinel.persistence
 
-import org.bson.types.ObjectId
 import java.util.Date
+import com.alertavert.sentinel.model.User
 
 trait HasCreator {
-  var createdBy: ObjectId = null
+  var createdBy: Option[User] = null
   var createdAt: Date = new Date
 }

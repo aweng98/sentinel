@@ -62,7 +62,6 @@ class Organization(val name: String) extends HasId with HasCreator {
 object Organization {
   class Builder(val name: String) {
     private val _org = new Organization(name)
-    _org.createdAt = new Date()
 
     def withId(id: ObjectId): Builder = {
       _org.setId(id)
@@ -70,7 +69,7 @@ object Organization {
     }
 
     def createdBy(user: User) = {
-      _org.createdBy = user.id.get
+      _org.createdBy = Some(user)
       this
     }
 

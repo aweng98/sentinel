@@ -112,7 +112,14 @@ class Resource extends Asset {
 class Permission(val action: Action, val resource: Resource) {
   private var user: User = _
 
+  // TODO: this needs some guard: ie, verifying that the 'grantor' has the permission to Grant on
+  // this Asset
   def grant(user: User) {
     this.user = user
+  }
+
+  def grantedTo: Option[User] = user match {
+    case null => None
+    case _ => Some(user)
   }
 }

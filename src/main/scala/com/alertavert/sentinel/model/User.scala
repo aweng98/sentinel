@@ -93,11 +93,12 @@ class User() extends HasId with HasCreator {
 }
 
 object User {
+  val unknown: User = builder("unknown") build
 
   class Builder(val first: String, val last: String = "") {
     var id: ObjectId = _
     var credentials: Option[Credentials] = None
-    var created_by: ObjectId = null
+    var created_by: User = null
     var created = new Date()
     var active = false
     var lastSeen = new Date()
@@ -117,8 +118,8 @@ object User {
       this
     }
 
-    def createdBy(userId: ObjectId) = {
-      this.created_by = userId
+    def createdBy(user: User) = {
+      this.created_by = user
       this
     }
 
@@ -146,7 +147,10 @@ object User {
         case None => Credentials.emptyCredentials
         case Some(_) => credentials get
       }
-      user.createdBy = created_by
+      user.createdBy = created_by match {
+        case u: User => Some(u)
+        case _ => None
+      }
       user.createdAt = created
       user._lastSeen = lastSeen
       if (active) user.activate()
