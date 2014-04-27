@@ -18,8 +18,14 @@ class UserDaoTest extends UnitSpec with BeforeAndAfter {
       "prior to running tests")
   }
 
-  trait CreatedBy {
-    val creator = User.builder("Joe", "Schmoe") withId new ObjectId build
+  trait CreatedByAdminUser {
+    val adminUser = User.builder("admin") build
+    val adminId = dao << adminUser
+  }
+
+  trait CreatedByOrdinaryUser extends CreatedByAdminUser {
+    val creator = User.builder("Joe", "Schmoe") withId(new ObjectId) createdBy(adminUser) build
+    val creatorId = dao << creator
   }
 
   "when connecting to a default mongo, we" should "get a valid connection" in {
@@ -28,13 +34,13 @@ class UserDaoTest extends UnitSpec with BeforeAndAfter {
     assert(dao != null)
   }
 
-  "when saving a valid user, we" should "get a valid OID" in new CreatedBy {
+  "when saving a valid user, we" should "get a valid OID" in new CreatedByOrdinaryUser {
     val user = User.builder("bob", "foo") createdBy creator build()
     val uid = dao << user
     assert (uid != null)
   }
 
-  it should "preserve the data" in new CreatedBy {
+  it should "preserve the data" in new CreatedByOrdinaryUser {
     val user = User.builder("Dan", "Dude") createdBy creator hasCreds("dandude", "abcfedead",
       1234) build()
     val uid = dao << user
@@ -44,7 +50,7 @@ class UserDaoTest extends UnitSpec with BeforeAndAfter {
     assert(user.getCredentials === retrievedUser.getCredentials)
   }
 
-  "when saving an existing user, we" should "get the same OID" in new CreatedBy {
+  it should "get the same ID, if previously set" in new CreatedByOrdinaryUser {
     val user = User.builder("Joe", "blast") createdBy creator build()
     val uid = new ObjectId
     user.setId(uid)
@@ -56,7 +62,18 @@ class UserDaoTest extends UnitSpec with BeforeAndAfter {
     assert(uid === anUid)
   }
 
-  "when saving many users, we" should "get them all back" in new CreatedBy {
+  it should "have the creators' chain preserved" in new CreatedByOrdinaryUser {
+    val bob = User.builder("bob") createdBy creator build
+    val bobId = dao << bob
+
+    val bobAgain = dao.find(bobId).getOrElse(fail("Could not retrieve a valid user (Bob)"))
+    assert(bob === bobAgain)
+    assert(creator === bobAgain.createdBy.getOrElse(fail("No creator for bobAgain")))
+    val admin = bob.createdBy.get.createdBy.getOrElse(fail("No Admin creator for Joe"))
+    assert(adminUser === admin)
+  }
+
+  "when saving many users, they" should "be found again" in new CreatedByOrdinaryUser {
     val users = List(User.builder("alice") createdBy creator build(),
       User.builder("bob") createdBy creator build(),
       User.builder("charlie") createdBy creator build())

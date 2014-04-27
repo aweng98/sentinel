@@ -33,7 +33,8 @@ abstract class MongoDao[T <: HasId](val collection: MongoCollection) extends DAO
 
     // TODO: create app-specific exception and throw, with better error message
     if (! cmdResult.ok()) throw new DbException("Save failed: " + cmdResult.getErrorMessage)
-    item.as[ObjectId] ("_id")
+    obj.setId(item.as[ObjectId] ("_id"))
+    obj.id.get
   }
 
   /**
