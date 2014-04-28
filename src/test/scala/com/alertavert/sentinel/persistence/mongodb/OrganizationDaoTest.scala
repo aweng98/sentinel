@@ -4,9 +4,7 @@ import org.scalatest._
 import com.alertavert.sentinel.model.{User, Organization}
 import org.bson.types.ObjectId
 import com.alertavert.sentinel.persistence.{DataAccessManager, DAO}
-
-abstract class UnitSpec extends FlatSpec with Matchers with OptionValues with
-Inside with Inspectors with BeforeAndAfter
+import com.alertavert.sentinel.UnitSpec
 
 
 class OrganizationDaoTest extends UnitSpec with BeforeAndAfter {
@@ -20,7 +18,6 @@ class OrganizationDaoTest extends UnitSpec with BeforeAndAfter {
   }
 
   before {
-    DataAccessManager.init("mongodb:///orgs-test")
     dao = MongoOrganizationDao()
     dao.asInstanceOf[MongoOrganizationDao].collection.drop()
     assume(dao.asInstanceOf[MongoOrganizationDao].collection.count() == 0, "Collection should be empty " +

@@ -3,8 +3,7 @@ package com.alertavert.sentinel.persistence.mongodb
 import language.postfixOps
 import com.alertavert.sentinel.model.User
 import com.mongodb.casbah.Imports._
-import com.mongodb.casbah.{MongoCollection, MongoURI}
-import com.mongodb.casbah.commons.TypeImports.ObjectId
+import com.mongodb.casbah.MongoCollection
 import java.util.Date
 import com.alertavert.sentinel.security.Credentials
 import com.alertavert.sentinel.persistence.DataAccessManager
@@ -52,7 +51,7 @@ object MongoUserDao {
   private var instance: MongoUserDao = _
 
   def apply(): MongoUserDao = instance match {
-    case null => {
+    case null =>
       if (DataAccessManager isReady) {
         instance = new MongoUserDao(DataAccessManager.db(USER_COLLECTION))
           with IdSerializer[User] with CreatorSerializer[User]
@@ -60,7 +59,6 @@ object MongoUserDao {
         throw new IllegalStateException("DataAccessManager not initialized")
       }
       instance
-    }
     case _ => instance
   }
 }

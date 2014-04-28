@@ -4,6 +4,7 @@ import org.scalatest._
 import com.alertavert.sentinel.model.User
 import org.bson.types.ObjectId
 import com.alertavert.sentinel.persistence.{DAO, DataAccessManager}
+import com.alertavert.sentinel.UnitSpec
 
 
 class UserDaoTest extends UnitSpec with BeforeAndAfter {
@@ -11,14 +12,14 @@ class UserDaoTest extends UnitSpec with BeforeAndAfter {
   var dao: DAO[User] = _
 
   before {
-    DataAccessManager.init("mongodb:///user-test")
     dao = MongoUserDao()
     dao.asInstanceOf[MongoUserDao].collection.drop()
-    assume(dao.asInstanceOf[MongoUserDao].collection.count() == 0, "Collection should be empty " +
-      "prior to running tests")
   }
 
   trait CreatedByAdminUser {
+    assume(dao.asInstanceOf[MongoUserDao].collection.count() == 0, "Collection should be empty " +
+      "prior to running tests")
+
     val adminUser = User.builder("admin") build
     val adminId = dao << adminUser
   }

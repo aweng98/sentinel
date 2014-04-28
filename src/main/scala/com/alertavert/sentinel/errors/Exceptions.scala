@@ -1,7 +1,7 @@
 package com.alertavert.sentinel.errors
 
 import com.alertavert.sentinel.model.User
-import com.alertavert.sentinel.security.{Permission, Resource}
+import com.alertavert.sentinel.security.Permission
 import org.bson.types.ObjectId
 
 /**
