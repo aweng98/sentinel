@@ -2,7 +2,7 @@ package com.alertavert.sentinel.model
 
 import com.mongodb.casbah.Imports.ObjectId
 import java.util.Date
-import com.alertavert.sentinel.persistence.HasId
+import com.alertavert.sentinel.persistence.{HasCreator, HasId}
 
 /**
  * Models an Organization
@@ -16,17 +16,8 @@ import com.alertavert.sentinel.persistence.HasId
  * delete the org, if that permission is granted.
  *
  */
-class Organization(val name: String) extends HasId {
+class Organization(val name: String) extends HasId with HasCreator {
 
-  private var _id: Option[ObjectId] = None
-
-  override def id: Option[ObjectId] = _id
-  override def setId(id: ObjectId) {
-    this._id = Some(id)
-  }
-
-  var created_by: User = _
-  var created: Date = _
   var active: Boolean = false
 
   def activate() {
@@ -50,13 +41,27 @@ class Organization(val name: String) extends HasId {
     s"[$id_] $name ($active_)"
   }
 
+
+  def canEqual(other: Any): Boolean = other.isInstanceOf[Organization]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: Organization =>
+      (that canEqual this) &&
+        id == that.id &&
+        name == that.name
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(id, name)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
 }
 
 
 object Organization {
   class Builder(val name: String) {
     private val _org = new Organization(name)
-    _org.created = new Date()
 
     def withId(id: ObjectId): Builder = {
       _org.setId(id)
@@ -64,7 +69,7 @@ object Organization {
     }
 
     def createdBy(user: User) = {
-      _org.created_by = user
+      _org.createdBy = Some(user)
       this
     }
 
@@ -74,7 +79,7 @@ object Organization {
     }
 
     def created(when: Date) = {
-      _org.created = when
+      _org.createdAt = when
       this
     }
 
@@ -83,7 +88,7 @@ object Organization {
     }
   }
 
-  val EmptyOrg = new Organization("")
+  val EmptyOrg = new Organization("NewCo")
 
   def builder(org_name: String): Builder = new Builder(org_name)
 }
