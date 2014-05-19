@@ -16,10 +16,8 @@ class MongoOrganizationDao(val orgsCollection: MongoCollection) extends
     "active" -> org.active
   )
 
-  override def deserialize(item: MongoDBObject) = {
-    (Organization.builder(item.as[String]("name"))
-      setActive item.as[Boolean]("active")) build
-  }
+  override def deserialize(item: MongoDBObject) = (Organization.builder(item.as[String]("name"))
+    setActive item.as[Boolean]("active")) build
 }
 
 object MongoOrganizationDao {

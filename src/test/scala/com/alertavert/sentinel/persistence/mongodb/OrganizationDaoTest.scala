@@ -20,8 +20,8 @@ class OrganizationDaoTest extends UnitSpec with BeforeAndAfter {
   before {
     dao = MongoOrganizationDao()
     dao.asInstanceOf[MongoOrganizationDao].collection.drop()
-    assume(dao.asInstanceOf[MongoOrganizationDao].collection.count() == 0, "Collection should be empty " +
-      "prior to running tests")
+    assume(dao.asInstanceOf[MongoOrganizationDao].collection.count() == 0,
+      "Collection should be empty prior to running tests")
   }
 
   "Organizations" can "be saved in Mongo" in new OrgCreator {

@@ -1,6 +1,6 @@
 name := "scala-sentinel"
 
-version := "0.1"
+version := "0.2"
 
 scalaVersion := "2.10.1"
 
@@ -18,5 +18,7 @@ resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/release
 libraryDependencies ++= Seq(
   "org.scalatest" % "scalatest_2.10" % "2.0" % "test",
   "org.mongodb" %% "casbah" % "2.5.0",
-  "com.typesafe.akka" %% "akka-actor" % "2.3.1"
+  "com.typesafe.akka" %% "akka-actor" % "2.3.1",
+  "org.slf4j" % "slf4j-api" % "1.6.4",
+  "org.slf4j" % "slf4j-simple" % "1.6.4"
 )

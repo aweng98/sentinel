@@ -6,6 +6,6 @@ trait HasId {
   var id: Option[ObjectId] = None
 
   def setId(id: ObjectId) {
-    this.id = Some(id)
+    this.id = if (id != null) Some(id) else None
   }
 }

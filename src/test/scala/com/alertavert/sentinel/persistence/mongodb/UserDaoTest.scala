@@ -1,10 +1,11 @@
 package com.alertavert.sentinel.persistence.mongodb
 
 import org.scalatest._
-import com.alertavert.sentinel.model.User
+import com.alertavert.sentinel.model.{Resource, User}
 import org.bson.types.ObjectId
-import com.alertavert.sentinel.persistence.{DAO, DataAccessManager}
+import com.alertavert.sentinel.persistence.DAO
 import com.alertavert.sentinel.UnitSpec
+import com.alertavert.sentinel.security.{Grant, Permission}
 
 
 class UserDaoTest extends UnitSpec with BeforeAndAfter {
@@ -13,36 +14,29 @@ class UserDaoTest extends UnitSpec with BeforeAndAfter {
 
   before {
     dao = MongoUserDao()
-    dao.asInstanceOf[MongoUserDao].collection.drop()
+    val coll = dao.asInstanceOf[MongoUserDao].collection
+    coll.drop()
+    assume(coll.count() == 0, "Collection should be empty prior to running tests")
   }
 
   trait CreatedByAdminUser {
-    assume(dao.asInstanceOf[MongoUserDao].collection.count() == 0, "Collection should be empty " +
-      "prior to running tests")
-
-    val adminUser = User.builder("admin") build
+    val adminUser = User.builder("admin") build()
     val adminId = dao << adminUser
   }
 
   trait CreatedByOrdinaryUser extends CreatedByAdminUser {
-    val creator = User.builder("Joe", "Schmoe") withId(new ObjectId) createdBy(adminUser) build
-    val creatorId = dao << creator
-  }
-
-  "when connecting to a default mongo, we" should "get a valid connection" in {
-    DataAccessManager.init("mongodb://localhost:27017/sentinel_test")
-    val dao = MongoUserDao()
-    assert(dao != null)
+    val ordinaryUser = User.builder("Creator", "User") withId new ObjectId createdBy adminUser build()
+    val creatorId = dao << ordinaryUser
   }
 
   "when saving a valid user, we" should "get a valid OID" in new CreatedByOrdinaryUser {
-    val user = User.builder("bob", "foo") createdBy creator build()
+    val user = User.builder("bob", "foo") createdBy ordinaryUser build()
     val uid = dao << user
     assert (uid != null)
   }
 
   it should "preserve the data" in new CreatedByOrdinaryUser {
-    val user = User.builder("Dan", "Dude") createdBy creator hasCreds("dandude", "abcfedead",
+    val user = User.builder("Dan", "Dude") createdBy ordinaryUser hasCreds("dandude", "abcfedead",
       1234) build()
     val uid = dao << user
     val retrievedUser = dao.find(uid).getOrElse(fail("No user found for the given OID"))
@@ -52,7 +46,7 @@ class UserDaoTest extends UnitSpec with BeforeAndAfter {
   }
 
   it should "get the same ID, if previously set" in new CreatedByOrdinaryUser {
-    val user = User.builder("Joe", "blast") createdBy creator build()
+    val user = User.builder("Joe", "blast") createdBy ordinaryUser build()
     val uid = new ObjectId
     user.setId(uid)
     val newUid = dao << user
@@ -64,22 +58,36 @@ class UserDaoTest extends UnitSpec with BeforeAndAfter {
   }
 
   it should "have the creators' chain preserved" in new CreatedByOrdinaryUser {
-    val bob = User.builder("bob") createdBy creator build
+    val bob = User.builder("bob") createdBy ordinaryUser build()
     val bobId = dao << bob
 
     val bobAgain = dao.find(bobId).getOrElse(fail("Could not retrieve a valid user (Bob)"))
     assert(bob === bobAgain)
-    assert(creator === bobAgain.createdBy.getOrElse(fail("No creator for bobAgain")))
-    val admin = bob.createdBy.get.createdBy.getOrElse(fail("No Admin creator for Joe"))
+    assert(ordinaryUser === bobAgain.createdBy.getOrElse(fail("No creator for bobAgain")))
+    val admin = bob.createdBy.get.createdBy.getOrElse(fail("No Admin creator"))
     assert(adminUser === admin)
   }
 
+  it can "be saved with permissions set" in new CreatedByOrdinaryUser {
+    val resource = new Resource("buzz", ordinaryUser)
+    MongoResourceDao() << resource
+    Permission.grant(Grant(), resource, ordinaryUser)
+    dao << ordinaryUser
+  }
+
   "when saving many users, they" should "be found again" in new CreatedByOrdinaryUser {
-    val users = List(User.builder("alice") createdBy creator build(),
-      User.builder("bob") createdBy creator build(),
-      User.builder("charlie") createdBy creator build())
+    info("Before saving many users:")
+    dao.findAll() foreach (u => info(u.toString))
+    info("---------------------------")
+    val users = List(User.builder("alice") createdBy ordinaryUser build(),
+      User.builder("bob") createdBy ordinaryUser build(),
+      User.builder("charlie") createdBy ordinaryUser build())
 
     users.foreach(dao << _)
     dao.findAll() map(_.firstName) should contain allOf ("alice", "bob", "charlie")
+    dao.findAll() should have size 5
+    info("After saving many users:")
+    dao.findAll() foreach (u => info(u.toString))
+    info("---------------------------")
   }
 }

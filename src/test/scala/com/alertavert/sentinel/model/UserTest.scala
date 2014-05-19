@@ -2,7 +2,7 @@ package com.alertavert.sentinel.model
 
 import com.mongodb.casbah.Imports.ObjectId
 
-import com.alertavert.sentinel.security.Credentials
+import com.alertavert.sentinel.security.{Permission, Edit, Credentials}
 import com.alertavert.sentinel.UnitSpec
 
 /**
@@ -41,7 +41,7 @@ class UserTest extends UnitSpec {
     }
   }
 
-  "Invalid credentials" must "fail checks" in new UserBuilder with UserCredentials {
+  it must "fail checks, if credentials are invalid" in new UserBuilder with UserCredentials {
     // the `salt` is not a secret, but can be used as a `challenge` and thus may be known to a hacker
     val salt = creds.salt
     val guessedHashPwd = Credentials.hash("wildGuess", salt)
@@ -52,6 +52,30 @@ class UserTest extends UnitSpec {
       isActive.build()
     assert(! (aUser checkCredentials hackerCreds))
     assert(aUser checkCredentials creds)
+  }
+
+  it can "have no permissions by default" in new UserBuilder {
+    val bill = builder build()
+    bill.perms shouldBe empty
+  }
+
+  it can "have permissions added" in new UserBuilder {
+    val bill = builder build()
+    val editableResource = new Resource("notebook", bill)
+    editableResource.allowedActions += Edit()
+    val edit = new Permission(Edit(), editableResource)
+    edit.grantTo(bill)
+    bill.perms should have size 1
+  }
+
+  it should "be allowed to do stuff, with permission" in new UserBuilder {
+    val bill = builder build()
+    val editableResource = new Resource("foobaz", bill)
+    editableResource.allowedActions += Edit()
+    val edit = new Permission(Edit(), editableResource)
+    edit.grantTo(bill)
+
+    assert(edit.grantedTo(bill))
   }
 
   "users with same username and ID" should "be equal" in {

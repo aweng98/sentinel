@@ -11,9 +11,12 @@ class MongoResourceDao(val resourceCollection: MongoCollection) extends
 
   override def serialize(resource: Resource): MongoDBObject = {
     MongoDBObject(
-      "owner_id" -> resource.owner.id.getOrElse(throw new NotAllowedException(
-        s"Resource $resource cannot be saved, as its owner is not registered in the database")),
-      "allowed_actions" -> resource.allowedActions
+      "owner_id" -> resource.owner.id.getOrElse({
+        MongoUserDao() << resource.owner
+        resource.owner.id
+      }),
+      "allowed_actions" -> resource.allowedActions,
+      "name" -> resource.name
     )
   }
 
@@ -21,8 +24,10 @@ class MongoResourceDao(val resourceCollection: MongoCollection) extends
     val ownerId = dbObj.as[ObjectId]("owner_id")
     val owner = MongoUserDao().find(ownerId).getOrElse(
       throw new NotFoundException(ownerId, "Invalid Owner ID for resource"))
-    val res = new Resource(owner)
+    val name = dbObj.as[String]("name")
+    val res = new Resource(name, owner)
     res.allowedActions ++= dbObj.as[List[Action]]("allowed_actions")
+
     res
   }
 }

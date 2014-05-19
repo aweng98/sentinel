@@ -3,14 +3,15 @@ package com.alertavert.sentinel.model
 //import language.postfixOps
 import java.util.Date
 
-import com.alertavert.sentinel.security.Credentials
+import com.alertavert.sentinel.security.{Permission, Credentials}
 import com.mongodb.casbah.Imports.ObjectId
 import com.alertavert.sentinel.persistence.{HasCreator, HasId}
+import scala.collection.mutable
 
 /**
  * The main core class of the system, models a user of the system.
  *
- * This is a `value` class, and once created (using a {@link Builder}) the values
+ * This is a `value` class, and once created (using a `Builder`) the values
  * of its properties ought not be changed (although there are helper methods, such as
  * ones to reset the password, activate a user and update when it was last logged in).
  *
@@ -23,6 +24,8 @@ class User() extends HasId with HasCreator {
   private var _credentials: Credentials = Credentials.emptyCredentials
   private var _active: Boolean = _
   private var _lastSeen: Date = _
+
+  var perms = mutable.DoubleLinkedList[Permission]()
 
   // A number of "getter" methods to retrieve values for this User
   def firstName = _firstName
@@ -93,10 +96,10 @@ class User() extends HasId with HasCreator {
 }
 
 object User {
-  val unknown: User = builder("unknown") build
+  val unknown: User = builder("unknown") build()
 
   class Builder(val first: String, val last: String = "") {
-    var id: ObjectId = _
+    var id: ObjectId = null
     var credentials: Option[Credentials] = None
     var created_by: User = null
     var created = new Date()

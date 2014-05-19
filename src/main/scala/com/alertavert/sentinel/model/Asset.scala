@@ -22,7 +22,7 @@ import com.alertavert.sentinel.errors.NotAllowedException
 trait Asset extends HasId with HasCreator {
 
   /** Note that the ``owner`` of an ``asset`` may not necessarily be the ``creator`` */
-  val owner: User
+  var owner: User
 
   // by default, assume the owner is the creator too
   this.createdBy = Some(owner)
@@ -49,9 +49,8 @@ trait Asset extends HasId with HasCreator {
  * <p>Regardless of its nature, a ``Resource`` will always allow its ``owner`` to ``Grant``
  * others (including herself) other permissions, and to ``Delete`` the resource itself.
  */
-class Resource(override val owner: User) extends Asset {
+class Resource(var name: String, override var owner: User) extends Asset {
   var allowedActions: Set[Action] = Set(Grant(), Delete())
-
 
   def canEqual(other: Any): Boolean = other.isInstanceOf[Resource]
 
@@ -66,5 +65,10 @@ class Resource(override val owner: User) extends Asset {
   override def hashCode(): Int = {
     val state = Seq(id, owner)
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
+
+  override def toString = {
+    val path = super.toString
+    s"$name ($path)"
   }
 }

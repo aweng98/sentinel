@@ -1,9 +1,6 @@
 package com.alertavert.sentinel.security
 
-import com.alertavert.sentinel.persistence.HasCreator
 import com.alertavert.sentinel.model.{Resource, User}
-import org.bson.{Transformer, BSON}
-import com.mongodb.casbah.commons.conversions.MongoConversionHelper
 
 
 trait Action extends Serializable {
@@ -14,6 +11,8 @@ trait Action extends Serializable {
   }
 
   override def toString = name.capitalize
+
+  override def hashCode(): Int = name.hashCode
 }
 
 object Action {
@@ -81,20 +80,52 @@ object View extends Action {
  * A ``permission`` defines an action that can be performed (eg, ``edit``) on a Resource.
  * Permissions are immutable.
  *
- * @param action
- * @param resource
+ * @param action the action that is allowed on the ``resource``
+ * @param resource the ``resource`` which we are allowed to take ``action`` upon
  */
 class Permission(val action: Action, val resource: Resource) {
-  private var user: User = _
+
+  require(resource.allowedActions contains action)
 
   // TODO: this needs some guard: ie, verifying that the 'grantor' has the permission to Grant on
   // this Asset
-  def grant(user: User) {
-    this.user = user
+  def grantTo(user: User) {
+    user.perms = user.perms :+ this
   }
 
-  def grantedTo: Option[User] = user match {
-    case null => None
-    case _ => Some(user)
+  def grantedTo(user: User) = {
+    user.perms.contains(this)
+  }
+
+  def revoke(user: User) = {
+    if (grantedTo(user)) {
+      user.perms = user.perms.filterNot(_ != this)
+    }
+  }
+
+  override def hashCode(): Int = 31 * action.hashCode() * resource.hashCode()
+
+  override def equals(that: Any): Boolean = that match {
+    case that: Permission => this.action == that.action &&
+      this.resource == that.resource
+    case _ => false
+  }
+
+  override def toString = {
+    s"Permission: $action for $resource"
+  }
+}
+
+object Permission {
+
+  def grant(action: Action, resource: Resource, user: User) {
+    val perm = new Permission(action, resource)
+    perm.grantTo(user)
+  }
+
+  def grant(actions: Seq[Action], resource: Resource, user: User) {
+    for (action <- actions) {
+      grant(action, resource, user)
+    }
   }
 }

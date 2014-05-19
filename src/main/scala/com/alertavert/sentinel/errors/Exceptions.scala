@@ -21,11 +21,17 @@ class DbException(override val message: String, override  val cause: Throwable =
 
 
 class SecurityException(val subject: User, override val message: String) extends
-    SentinelException(s"Could not authenticate $subject: $message")
+    SentinelException(s"Could not authorize $subject: $message")
 
 
-class PermissionAccessError(val permission: Permission, override val message: String) extends
-    SecurityException(permission.grantedTo.getOrElse(User.unknown), message)
+class AuthenticationError(override val subject: User) extends
+  SecurityException(subject, "invalid credentials or authentication failure")
+
+
+class PermissionAccessError(override val subject: User, val permission: Permission,
+    override val message: String)
+  extends
+    SecurityException(subject, s"$permission not allowed")
 
 
 class NotFoundException(val id: ObjectId, override val message: String) extends
