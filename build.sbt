@@ -1,24 +1,26 @@
-name := "scala-sentinel"
+// Copyright (c) 2014 AlertAvert.com.  All rights reserved.
 
-version := "0.2"
+name := "sentinel"
 
-scalaVersion := "2.10.1"
+version := "0.1"
 
 organization := "AlertAvert.com"
 
-// append -deprecation to the options passed to the Scala compiler
 scalacOptions ++= Seq("-deprecation", "-feature", "-language:postfixOps")
 
-// set the initial commands when entering 'console' only
-initialCommands in console := "import com.alertavert.sentinel._"
+// The REST project depends on Core Sentinel classes
+lazy val sentinel_core = project
 
-// AKKA Actors dependency
-resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
+lazy val sentinel = (project in file("."))
+    .enablePlugins(PlayScala)
+    .aggregate(sentinel_core)
+    .dependsOn(sentinel_core)
+
+scalaVersion := "2.10.4"
 
 libraryDependencies ++= Seq(
-  "org.scalatest" % "scalatest_2.10" % "2.0" % "test",
-  "org.mongodb" %% "casbah" % "2.5.0",
-  "com.typesafe.akka" %% "akka-actor" % "2.3.1",
-  "org.slf4j" % "slf4j-api" % "1.6.4",
-  "org.slf4j" % "slf4j-simple" % "1.6.4"
+  jdbc,
+  anorm,
+  cache,
+  ws
 )

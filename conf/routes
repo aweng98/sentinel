@@ -1,0 +1,19 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home page
+GET     /                           controllers.Application.index
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file               controllers.Assets.at(path="/public", file)
+
+# User login - returns the API Key
+POST    /login                      controllers.Application.login
+
+#
+# REST API
+#
+GET     /user                       controllers.Application.users
+GET     /user/*id                   controllers.Application.userById(id)
+POST    /user                       controllers.Application.createUser

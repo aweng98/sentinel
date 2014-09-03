@@ -1,9 +1,22 @@
 # Git Ignore file for Sentinel (Scala) Project
 
+.history
+
 # IntelliJ specific dirs
-out/
 .idea/
 *.iml
+/out
+/.idea_modules
 
-target/
+# Activator binaries
+activator*
 
+# Play Framework
+logs
+dist
+project/project
+project/target
+target
+tmp
+.cache
+/RUNNING_PID
