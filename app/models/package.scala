@@ -45,12 +45,14 @@ package object security {
   object Authenticated extends ActionBuilder[AuthenticatedRequest] {
     def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) => Future[Result]) = {
       request.headers.get("Authorization").map { authHeadr =>
-        println(s"Authentication: $authHeadr")
         val segments = authHeadr.split(";")
-        val usr = segments.filter(_.startsWith("user")).head.split("=")(1)
-        val hash = segments.filter(_.startsWith("hash")).head.split("=")(1)
-        println(s"Validating user [$usr]")
-        block(new AuthenticatedRequest(usr, request))
+        try {
+          val usr = segments.filter(_.startsWith("user")).head.split("=")(1)
+          val hash = segments.filter(_.startsWith("hash")).head.split("=")(1)
+          block(new AuthenticatedRequest(usr, request))
+        } catch {
+          case ex: Exception => Future.successful(Results.Forbidden)
+        }
       } getOrElse {
           Future.successful(Results.Forbidden)
       }
