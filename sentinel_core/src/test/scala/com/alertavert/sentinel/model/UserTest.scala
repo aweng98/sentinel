@@ -18,6 +18,10 @@ class UserTest extends UnitSpec {
     val creds = Credentials.createCredentials("anUser", "andHisPwd")
   }
 
+  trait AuthenticatedUser extends UserBuilder with UserCredentials {
+    val user = builder hasCreds creds build
+  }
+
   "A user" can "be created" in new UserBuilder {
     val user = builder.build()
     assert(user != null)
@@ -76,6 +80,14 @@ class UserTest extends UnitSpec {
     edit.grantTo(bill)
 
     assert(edit.grantedTo(bill))
+  }
+
+  it can "be authenticated, given username/password" in new AuthenticatedUser {
+    assert(user authenticate("anUser", "andHisPwd"))
+  }
+
+  it must "fail authentication, if the password is wrong" in new AuthenticatedUser {
+    assert(! user.authenticate("anUser", "foobaz"))
   }
 
   "users with same username and ID" should "be equal" in {

@@ -6,6 +6,8 @@ package models.resources
  * Created by marco on 9/1/14.
  */
 
+import java.util.Date
+
 import com.alertavert.sentinel.errors.AuthenticationError
 import com.alertavert.sentinel.model.User
 import com.alertavert.sentinel.persistence.UserDao
@@ -28,19 +30,17 @@ object UsersResource {
 
   def authUser(username: String, password: String): User = {
     dao.findByUsername(username) match {
-      case None => throw new AuthenticationError(
-          User.builder("") hasCreds Credentials.createCredentials(username, password) build
-        )
+      case None => throw new AuthenticationError(s"Cannot authenticate $username")
       case Some(user) => {
-        val salt = user.getCredentials.salt
-        val hashPwd = Credentials.hash(password, salt)
-        if (hashPwd != user.getCredentials.hashedPassword) throw new AuthenticationError(user)
+        if (!user.authenticate(username, password)) throw new AuthenticationError()
+        // Record that the user has now logged in and update its 'last-seen' field
+        user.updateActivity()
+        dao.upsert(user)
         user
       }
     }
   }
 
-  // TODO(marco): this layer should know nothing about JSON and friends
   def createUser(request: JsValue): JsObject = {
     val first = (request \ "first_name").as[String]
     val last = (request \ "last_name").as[String]

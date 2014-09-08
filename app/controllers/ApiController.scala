@@ -2,19 +2,19 @@ package controllers
 
 import com.alertavert.sentinel.errors.AuthenticationError
 import com.alertavert.sentinel.persistence.DataAccessManager
-import play.api._
-import play.api.mvc._
-import play.api.libs.json._
-import play.api.libs.functional.syntax._
 import models._
 import models.resources._
+import play.api.libs.json._
+import play.api.mvc._
+import security.Authenticated
 
 
-object Application extends Controller {
+object ApiController extends Controller {
 
   // TODO(marco): the DB URI must be read from configuration
   DataAccessManager.init("mongodb://localhost/sentinel-test")
 
+  // TODO(marco): this must be replaced with a suitable home page
   def index = Action {
     Ok(views.html.index("Your new application is ready."))
   }
@@ -24,7 +24,7 @@ object Application extends Controller {
     Ok(resJson)
   }
 
-  def userById(id: String) = Action {
+  def userById(id: String) = Authenticated {
     val user = Json.toJson(UsersResource.getUserById(id))
     Ok(user)
   }
@@ -46,5 +46,7 @@ object Application extends Controller {
     request =>
       Created(UsersResource.createUser(request.body))
   }
+
+  def modifyUser(id: String) = TODO
 
 }
