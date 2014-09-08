@@ -19,8 +19,8 @@ The request's body and (some of) its headers will be included in the hash.
 Protocol
 --------
 
-When a user sends an API request that needs to be authenticated (not all requests,
-but most do) an ``Authorization``[#]_ header must be present, which includes the following
+When a user sends an API request that needs to be authenticated (not all,
+but most requests do) an ``Authorization`` [#]_ header must be present, which includes the following
 fields::
 
 	Authorization: username="joe@acme.com";qop="auth-int";hash_func=SHA-256;hash=...hex...
