@@ -19,7 +19,7 @@ object ApiController extends Controller {
     Ok(views.html.index("Your new application is ready."))
   }
 
-  def users = Action {
+  def users = Authenticated {
     val resJson = Json.toJson(UsersResource.getAllUsers)
     Ok(resJson)
   }
@@ -42,7 +42,7 @@ object ApiController extends Controller {
       }
   }
 
-  def createUser = Action(BodyParsers.parse.json) {
+  def createUser = Authenticated(BodyParsers.parse.json) {
     request =>
       Created(UsersResource.createUser(request.body))
   }

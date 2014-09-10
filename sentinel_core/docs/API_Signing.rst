@@ -35,7 +35,7 @@ system-wide threshold (TBD) will be rejected; only UTC timestamps are accepted (
 	``qop``
 		Indicates that both HTTP method, URL, headers and entity body are included in the hash
 
-	``hash_func``
+	``hash_method``
 		The name of the hash function used; currently only ``SHA-256`` is supported.
 
 	``hash``
