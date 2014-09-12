@@ -20,3 +20,7 @@ target
 tmp
 .cache
 /RUNNING_PID
+
+# Apple nonsense
+.DS_Store
+

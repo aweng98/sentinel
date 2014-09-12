@@ -38,7 +38,7 @@ class User() extends HasId with HasCreator {
   def checkCredentials(that: Credentials) = _credentials == that
 
   def authenticate(username: String, password: String) = checkCredentials(new Credentials(username,
-                                     Credentials.hash(password, _credentials.salt),
+                                     Credentials.hashPwd(password, _credentials.salt),
                                      _credentials.salt))
 
   def activate() {

@@ -35,7 +35,7 @@ val md = MessageDigest.getInstance("SHA-256")
 val digest = md.digest(saltToBytes(175).toArray)
 bytesToHexString(digest)
 // hashed pwd was 'zekret' and seed 175
-val creds = new Credentials("marc", Credentials.hash("zekret", 175), 175)
+val creds = new Credentials("marc", Credentials.hashPwd("zekret", 175), 175)
 
 creds.saltToString
 creds.hashedPassword
