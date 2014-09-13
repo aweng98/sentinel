@@ -1,7 +1,8 @@
 package com.alertavert.sentinel.security
 
-//import language.postfixOps
-import java.security.{SecureRandom, MessageDigest}
+import java.security.SecureRandom
+
+import scala.language.postfixOps
 
 /**
  * User credentials class
@@ -84,26 +85,6 @@ class Credentials(val username: String,
 object Credentials {
 
   /**
-   * Generates a secure sequence of random bytes; however, the sequence is deterministic
-   * based on the value of the `salt`.
-   *
-   * @param seed an initializer seed
-   * @param size the number of bytes to generate, by default [[RND_SEED_LEN]]
-   * @return a random [[scala.collection.immutable.List]] of [[Byte]]s
-   */
-  def makeRnd(seed: Long, size: Int = RND_SEED_LEN): List[Byte] = {
-    // A brand new instance needs to be obtained here, so that seeding with the salt
-    // has the intended effect.  Seeding an existing SecureRandom does not reset it to the
-    // desired state
-    val secureRnd = SecureRandom.getInstance("SHA1PRNG")
-    val buf: Array[Byte] = Array.ofDim(size)
-
-    secureRnd.setSeed(seed)
-    secureRnd.nextBytes(buf)
-    buf.toList
-  }
-
-  /**
    * Computes the SHA-256 hash of the password and returns it encoded Base-64
    *
    * @param password in plaintext, it will be hashed
@@ -111,13 +92,9 @@ object Credentials {
    *             even if they choose the same password (as users do)
    * @return the hash of `password` in `base64` encoding
    */
-  def hash(password: String, salt: Long): String = {
-    val saltingBytes = makeRnd(salt)
-
-    md.reset()
-    md.update(saltingBytes.toArray)
-    md.update(password getBytes)
-    base64Encoder.encode(md.digest())
+  def hashPwd(password: String, salt: Long): String = {
+    val bytes = makeRnd(salt) ++ password.getBytes
+    base64Encoder.encode(hash(bytes).toArray)
   }
 
   /**
@@ -132,8 +109,8 @@ object Credentials {
   def createCredentials(username: String, password: String): Credentials = {
     val secureRnd = SecureRandom.getInstance(RND_ALGORITHM)
     val salt = secureRnd.nextLong()
-    val hashPwd = hash(password, salt)
-    new Credentials(username, hashPwd, salt)
+    val hashedPwd = hashPwd(password, salt)
+    new Credentials(username, hashedPwd, salt)
   }
 
   /**

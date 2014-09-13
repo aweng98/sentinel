@@ -48,7 +48,7 @@ class UserTest extends UnitSpec {
   it must "fail checks, if credentials are invalid" in new UserBuilder with UserCredentials {
     // the `salt` is not a secret, but can be used as a `challenge` and thus may be known to a hacker
     val salt = creds.salt
-    val guessedHashPwd = Credentials.hash("wildGuess", salt)
+    val guessedHashPwd = Credentials.hashPwd("wildGuess", salt)
     val hackerCreds = new Credentials("bob", guessedHashPwd, salt)
 
     // We would normally retrieve the user from the DB - we'll just create it anew here
