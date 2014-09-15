@@ -28,6 +28,10 @@ object UsersResource {
     dao.find(new ObjectId(id))
   }
 
+  def getUserByUsername(username: String) = {
+    dao.findByUsername(username)
+  }
+
   def authUser(username: String, password: String): User = {
     dao.findByUsername(username) match {
       case None => throw new AuthenticationError(s"Cannot authenticate $username")

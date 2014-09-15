@@ -1,8 +1,14 @@
 
-val s ="user:marco;hash:fferzfer=="
+val s ="user=marco;hash=fferzfer=="
 
-val segments = s.split(";")
+val pairs = scala.collection.mutable.Map[String, String]()
+val segments = s.split(";").map(t => t.split("=")).foreach(pair =>
+  pairs += (pair(0) -> pair(1)))
 
-val usr = segments.filter(_.startsWith("user")).head.split(":")(1)
+pairs
 
-List("a", "b").mkString("--", ", ", ";")
+val foos = List("fofo", "babo", "cuco")
+
+("" /: foos)(_ + _.toUpperCase)
+
+

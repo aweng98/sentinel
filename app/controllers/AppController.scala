@@ -15,7 +15,4 @@ object AppController extends Controller {
     Ok("OK")
   }
 
-  def foo = Action {
-    Forbidden("No can do, dude!")
-  }
 }

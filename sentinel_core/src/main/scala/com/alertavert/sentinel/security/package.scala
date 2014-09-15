@@ -29,9 +29,15 @@ package object security {
     md.digest.toList
   }
 
-  def hash(msg: String): Seq[Byte] = hash(msg getBytes)
-
-  def hashStrings(values: Seq[String]) = hash(values.mkString)
+  /**
+   * Hashes a sequence of strings.
+   *
+   * Use `encode` to obtain the base-64 representation of the hash
+   *
+   * @param values a sequence of strings that will all, in order, be hashed
+   * @return the generated hash, as a sequence of bytes
+   */
+  def hashStrings(values: Seq[String]) = hash(values.mkString getBytes)
 
   /**
    * Generates a secure sequence of random bytes; however, the sequence is deterministic
@@ -52,4 +58,20 @@ package object security {
     secureRnd.nextBytes(buf)
     buf.toSeq
   }
+
+  /**
+   * Encode an array of bytes into a BASE64 string
+   *
+   * @param bytes the bytes to encode
+   * @return a BASE64-encoded string
+   */
+  def encode(bytes: Seq[Byte]) = base64Encoder.encode(bytes.toArray)
+
+  /**
+   * Decode a base-64 string into its component bytes
+   *
+   * @param msg the encoded string
+   * @return the decoded bytes
+   */
+  def decode(msg: String) = base64Decoder.decodeBuffer(msg).toSeq
 }

@@ -19,12 +19,14 @@ object ApiController extends Controller {
     Ok(views.html.index("Your new application is ready."))
   }
 
-  def users = Authenticated {
+  def users = Authenticated { implicit request =>
+    // TODO: authorize user request.user to access all users' data
     val resJson = Json.toJson(UsersResource.getAllUsers)
     Ok(resJson)
   }
 
-  def userById(id: String) = Authenticated {
+  def userById(id: String) = Authenticated { implicit request =>
+    // TODO: authorize request.user to access user.id details
     val user = Json.toJson(UsersResource.getUserById(id))
     Ok(user)
   }
@@ -42,9 +44,9 @@ object ApiController extends Controller {
       }
   }
 
-  def createUser = Authenticated(BodyParsers.parse.json) {
-    request =>
-      Created(UsersResource.createUser(request.body))
+  def createUser = Authenticated(BodyParsers.parse.json) { implicit request =>
+    // TODO: add Location header with URI of created resource
+    Created(UsersResource.createUser(request.body))
   }
 
   def modifyUser(id: String) = TODO
