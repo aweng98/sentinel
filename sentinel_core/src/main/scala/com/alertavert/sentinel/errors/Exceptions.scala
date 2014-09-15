@@ -20,19 +20,24 @@ class DbException(override val message: String, override  val cause: Throwable =
     SentinelException (message, cause)
 
 
-class SecurityException(val subject: User, override val message: String) extends
-    SentinelException(List("Could not authorize", subject.getCredentials.username, ':',
-      message).mkString(" "))
+class SecurityException(override val message: String) extends SentinelException(message) {
+  def this(subject: User) = this("Could not authorize user: " + subject.getCredentials.username)
+}
+
+class AuthenticationError(override val message: String = "Invalid credentials or authentication failure",
+                          val subject: User = null) extends SecurityException(message) {
+
+  def details = {
+    if (subject != null) s"$message - Could not authenticate " + subject.getCredentials.username
+    message
+  }
+}
 
 
-class AuthenticationError(override val subject: User) extends
-  SecurityException(subject, "invalid credentials or authentication failure")
-
-
-class PermissionAccessError(override val subject: User, val permission: Permission,
-    override val message: String)
+class PermissionAccessError(val subject: User, val permission: Permission,
+    override val message: String = "not available")
   extends
-    SecurityException(subject, s"$permission not allowed")
+    SecurityException(s"$permission not allowed for $subject (detail: $message)")
 
 
 class NotFoundException(val id: ObjectId, override val message: String) extends
