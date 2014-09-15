@@ -4,8 +4,8 @@
  * Created by marco on 2/10/14.
  */
 import com.alertavert.sentinel.model._
-import com.alertavert.sentinel.security.{Edit, Grant, Action, Credentials}
-import java.security.MessageDigest
+import com.alertavert.sentinel.security._
+
 
 import org.bson.types.ObjectId
 
@@ -31,12 +31,30 @@ val marco = builder.withId(new ObjectId("53fd79f5e4b0be5b2144c836"))
                    .build()
 
 println(marco)
-val md = MessageDigest.getInstance("SHA-256")
 val digest = md.digest(saltToBytes(175).toArray)
 bytesToHexString(digest)
 // hashed pwd was 'zekret' and seed 175
-val creds = new Credentials("marc", Credentials.hash("zekret", 175), 175)
+val creds = new Credentials("marc", Credentials.hashPwd("zekret", 175), 175)
 
 creds.saltToString
 creds.hashedPassword
 creds.apiKey
+
+md.reset()
+md.update("bar" getBytes)
+md.update("foo" getBytes)
+md.update("bas" getBytes)
+md.update("qos" getBytes)
+val a = md.digest()
+
+val words = List("bar", "foo", "bas", "qos")
+md.reset()
+words.foreach(w => md.update(w getBytes))
+val b = md.digest()
+
+assert(a.toSeq == b.toSeq, "Hashes differ:" +
+  s"$a != $b")
+
+
+// Using the same seed generates the same sequence of random bytes:
+assert(makeRnd(9876543) == makeRnd(9876543))

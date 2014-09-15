@@ -1,7 +1,8 @@
 package com.alertavert.sentinel.security
 
-//import language.postfixOps
-import java.security.{SecureRandom, MessageDigest}
+import java.security.SecureRandom
+
+import scala.language.postfixOps
 
 /**
  * User credentials class
@@ -26,7 +27,7 @@ class Credentials(val username: String,
   private val _apiKey: Array[Byte] = createApiKey()
 
   /** Returns the API key as a base-64 encoded string */
-  def apiKey = Credentials.base64Encoder.encode(_apiKey)
+  def apiKey = base64Encoder.encode(_apiKey)
 
   /**
    * Creates an API key from the hashed password and salt
@@ -34,11 +35,11 @@ class Credentials(val username: String,
    * @return a pseudo-random API key in Base64 encoding
    */
   private def createApiKey() = {
-    Credentials.md.reset()
+    md.reset()
     // TODO(marco): add username to the hash
-    Credentials.md.update(hashedPassword getBytes)
-    Credentials.md update saltToBytes
-    Credentials.md.digest
+    md.update(hashedPassword getBytes)
+    md update saltToBytes
+    md.digest
   }
 
   def saltToBytes(): Array[Byte] = {
@@ -50,11 +51,11 @@ class Credentials(val username: String,
   }
 
   /**
-   * Hex encoding of the salt value
+   * Base64 encoding of the salt value
    *
-   * @return String representation of the salt value hex encoded
+   * @return String representation of the salt value encoded in Base64
    */
-  def saltToString = saltToBytes.reverse.map(x => f"$x%02X") mkString
+  def saltToString = base64Encoder.encode(saltToBytes)
 
   def canEqual(other: Any): Boolean = other.isInstanceOf[Credentials]
 
@@ -79,52 +80,23 @@ class Credentials(val username: String,
     val state = Seq(username, hashedPassword)
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
+
+  override def toString = s"[$username :: $hashedPassword]"
 }
 
 object Credentials {
-  val HASH_ALGORITHM = "SHA-256"
-  val RND_ALGORITHM = "SHA1PRNG"
-
-  private val md = MessageDigest.getInstance(HASH_ALGORITHM)
-  private val base64Encoder = new sun.misc.BASE64Encoder()
 
   /**
    * Computes the SHA-256 hash of the password and returns it encoded Base-64
    *
-   * @param password will be hashed
-   * @return the hash of <pre>password</pre> in hex encoding
+   * @param password in plaintext, it will be hashed
+   * @param salt a seed that makes hashed passwords different among users,
+   *             even if they choose the same password (as users do)
+   * @return the hash of `password` in `base64` encoding
    */
-  def hash(password: String, salt: Long): String = {
-    // A brand new instance needs to be obtained here, so that seeding with the salt
-    // has the intended effect.  Seeding an existing SecureRandom does not reset it to the
-    // desired state
-    val secureRnd = SecureRandom.getInstance(RND_ALGORITHM)
-    secureRnd.setSeed(salt)
-    val passwordBytes = password getBytes
-    val saltingBytes: Array[Byte] = Array.ofDim(passwordBytes.length)
-    secureRnd.nextBytes(saltingBytes)
-    md.reset()
-    val xoredBytes = for {
-      i <- 0 until passwordBytes.length
-      xor = (passwordBytes(i) ^ saltingBytes(i)) toByte
-    } yield xor
-    base64Encoder.encode(md.digest(xoredBytes toArray))
-  }
-
-  /**
-   * Converts the byte array into a printable string using hex encoding; the first element of the
-   * array is assumed to be lowest order byte; in other words, the value 3135 (0x0C3F) is stored
-   * as the array:
-   * <pre>
-   *   [00] [01] [02] [03]
-   *    3F   0C   00   00
-   * </pre>
-   *
-   * @param bytes an array to convert
-   * @return the hex representation of the bytes
-   */
-  def bytesToHexString(bytes: Array[Byte]) = {
-    bytes.reverse.map(x => f"$x%02X").mkString
+  def hashPwd(password: String, salt: Long): String = {
+    val bytes = makeRnd(salt) ++ password.getBytes
+    base64Encoder.encode(hash(bytes).toArray)
   }
 
   /**
@@ -139,8 +111,8 @@ object Credentials {
   def createCredentials(username: String, password: String): Credentials = {
     val secureRnd = SecureRandom.getInstance(RND_ALGORITHM)
     val salt = secureRnd.nextLong()
-    val hashPwd = hash(password, salt)
-    new Credentials(username, hashPwd, salt)
+    val hashedPwd = hashPwd(password, salt)
+    new Credentials(username, hashedPwd, salt)
   }
 
   /**
@@ -150,6 +122,6 @@ object Credentials {
    * @return an insecure set of credentials
    */
   def emptyCredentials = {
-    createCredentials("anonymous", "")
+    createCredentials("anon", "secret")
   }
 }

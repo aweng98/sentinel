@@ -1,32 +1,14 @@
-import com.alertavert.sentinel.model.Edit
-import com.alertavert.sentinel.security.{Edit, Action}
 
-object foo {
-  var perms = scala.collection.mutable.Set[Action]()
-  def baz() {
-    perms += Edit.action
-    println(perms)
-  }
-}
+val s ="user=marco;hash=fferzfer=="
 
-val x: Option[Int] = Some(5)
+val pairs = scala.collection.mutable.Map[String, String]()
+val segments = s.split(";").map(t => t.split("=")).foreach(pair =>
+  pairs += (pair(0) -> pair(1)))
 
-val st = x match {
-  case None => ""
-  case Some(n) => n.toString
-}
+pairs
 
-println(st)
+val foos = List("fofo", "babo", "cuco")
 
+("" /: foos)(_ + _.toUpperCase)
 
-val y: Option[Int] = Some(33)
-
-def compOptions(x: Option[Int], y: Option[Int]) = {
-  if ((x == None) && (y == None)) true
-  else x.map(n => y.exists(_ == n)) getOrElse false
-}
-compOptions(None, None)
-compOptions(None, Some(2))
-compOptions(Some(4), Some(4))
-compOptions(Some(5), None)
 
