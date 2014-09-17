@@ -54,22 +54,20 @@ package object security {
               throw new AuthenticationError())
           f(AuthenticatedRequest(user, request))
         } catch {
-          case ex: Exception => Results.Unauthorized
+          case ex: Exception => Results.Unauthorized(ex.getLocalizedMessage)
         }
     }
   }
 
   // TODO: the returned errors disclose too much information; replace with generic errors in Prod
   def validateHash[A](request: Request[A]): Option[User] = {
-    println(request.headers)
-    val date = request.headers.get("Date-auth").getOrElse(
+    val date = request.headers.get("Date").getOrElse(
       throw new AuthenticationError("Missing `Date:` header"))
 
     // Extract the value pairs from the Auth header: username=foo;hash=xYzaa99==
     val auth = request.headers.get("Authorization").getOrElse(
       throw new AuthenticationError("Missing `Authorization:` header"))
     val values = parseAuthHeader(auth)
-    println(2)
 
     val username = values.getOrElse("username",
       throw new AuthenticationError("`username` key missing in Authorization header"))
@@ -79,7 +77,6 @@ package object security {
     val user = UsersResource.getUserByUsername(username).getOrElse(
       throw new AuthenticationError(s"$username is not a recognized username"))
     val apiKey = user.getCredentials.apiKey
-        println(3)
 
     // TODO: verify that the Date this request is signed with is not a replay attack
     val computedHash = encode(hashStrings(List(
@@ -108,3 +105,4 @@ package object security {
     Authenticated(parse.anyContent)(f)
   }
 }
+
