@@ -84,6 +84,8 @@ class Credentials(val username: String,
 
 object Credentials {
 
+  def apply(username: String, password: String) = createCredentials(username, password)
+
   /**
    * Computes the SHA-256 hash of the password and returns it encoded Base-64
    *
@@ -113,13 +115,4 @@ object Credentials {
     new Credentials(username, hashedPwd, salt)
   }
 
-  /**
-   * A special type of credentials, that are highly insecure: use ONLY for testing purposes (or
-   * to create users with default values, for example if using injection)
-   *
-   * @return an insecure set of credentials
-   */
-  def emptyCredentials = {
-    createCredentials("anon", "secret")
-  }
 }
