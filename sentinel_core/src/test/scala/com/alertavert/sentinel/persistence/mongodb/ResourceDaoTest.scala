@@ -1,11 +1,11 @@
 package com.alertavert.sentinel.persistence.mongodb
 
 import com.alertavert.sentinel.UnitSpec
-import org.scalatest.BeforeAndAfter
+import com.alertavert.sentinel.model.{Resource, User}
 import com.alertavert.sentinel.persistence.DAO
-import com.alertavert.sentinel.model.{User, Resource}
+import com.alertavert.sentinel.security.{Credentials, Edit, View}
 import org.bson.types.ObjectId
-import com.alertavert.sentinel.security.{View, Edit}
+import org.scalatest.BeforeAndAfter
 
 class ResourceDaoTest extends UnitSpec with BeforeAndAfter {
 
@@ -18,8 +18,10 @@ class ResourceDaoTest extends UnitSpec with BeforeAndAfter {
     assume(coll.count() == 0, "Resource Collection should be empty prior to running tests")
   }
 
+  val creds = Credentials("user", "test")
+
   trait CreatedByOrdinaryUser {
-    val creator = User.builder("Joe", "Schmoe") withId new ObjectId  build()
+    val creator = User.builder("Joe", "Schmoe") withId new ObjectId  hasCreds creds build()
     val creatorId = MongoUserDao() << creator
   }
 
@@ -29,7 +31,7 @@ class ResourceDaoTest extends UnitSpec with BeforeAndAfter {
   }
 
   "A Resource" can "be saved" in new CreatedByOrdinaryUser {
-    val myRes = new Resource("saveme", User.builder("marco") withId new ObjectId build())
+    val myRes = new Resource("saveme", User.builder("marco") withId new ObjectId hasCreds creds build())
     myRes.createdBy = Some(creator)
     myRes.allowedActions += Edit()
     val resId = dao << myRes
@@ -50,7 +52,7 @@ class ResourceDaoTest extends UnitSpec with BeforeAndAfter {
     // not let's retrieve it from the DB ...
     val foundRes = dao.find(resId) getOrElse fail("Cannot retrieve the resource just saved")
     assert(foundRes === res)
-    val newOwner = User.builder("Bob", "Builder") build()
+    val newOwner = User.builder("Bob", "Builder") hasCreds creds build()
     // ... assign a new owner and save
     foundRes.owner = newOwner
     val sameId = dao << foundRes

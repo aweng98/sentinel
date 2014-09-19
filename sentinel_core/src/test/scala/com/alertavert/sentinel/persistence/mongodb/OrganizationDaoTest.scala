@@ -1,5 +1,6 @@
 package com.alertavert.sentinel.persistence.mongodb
 
+import com.alertavert.sentinel.security.Credentials
 import org.scalatest._
 import com.alertavert.sentinel.model.{User, Organization}
 import org.bson.types.ObjectId
@@ -12,7 +13,7 @@ class OrganizationDaoTest extends UnitSpec with BeforeAndAfter {
   var dao: DAO[Organization] = _
 
   trait OrgCreator {
-    val admin = User.builder("admin") build()
+    val admin = User.builder("admin") hasCreds Credentials("admin", "secret") build()
     val userDao = MongoUserDao()
     admin.setId(userDao << admin)
   }
