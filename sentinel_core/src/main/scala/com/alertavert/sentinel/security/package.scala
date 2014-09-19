@@ -26,7 +26,7 @@ package object security {
   def hash(values: Seq[Byte]): Seq[Byte] = {
     md.reset()
     md.update(values.toArray)
-    md.digest.toList
+    md.digest.toSeq
   }
 
   /**
@@ -41,13 +41,15 @@ package object security {
 
   /**
    * Generates a secure sequence of random bytes; however, the sequence is deterministic
-   * based on the value of the `salt`.
+   * based on the value of the `seed`.
    *
    * @param seed an initializer seed
    * @param size the number of bytes to generate, by default [[RND_SEED_LEN]]
-   * @return a random [[scala.collection.immutable.List]] of [[Byte]]s
+   * @return a random [[List]] of [[Byte]]s
    */
   def makeRnd(seed: Long, size: Int = RND_SEED_LEN): Seq[Byte] = {
+    if (size < 2) throw new IllegalArgumentException("A random sequence must be at least 2 bytes " +
+      "in length")
     // A brand new instance needs to be obtained here, so that seeding with the salt
     // has the intended effect.  Seeding an existing SecureRandom does not reset it to the
     // desired state

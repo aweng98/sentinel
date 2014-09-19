@@ -49,4 +49,8 @@ abstract class MongoDao[T <: HasId](val collection: MongoCollection) extends DAO
       item <- collection find() toIterable
     } yield deserialize(item)
   }
+
+  override def clear() {
+    collection remove MongoDBObject()
+  }
 }
