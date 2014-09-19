@@ -79,7 +79,7 @@ class MongoUserDao(val userCollection: MongoCollection) extends MongoDao[User](u
 
 
 object MongoUserDao {
-  private val USER_COLLECTION = "users"
+  val USER_COLLECTION = "users"
   private var instance: MongoUserDao = _
 
   def apply(): MongoUserDao = instance match {

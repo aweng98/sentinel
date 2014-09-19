@@ -15,9 +15,12 @@ class UserDaoTest extends UnitSpec with BeforeAndAfter {
   before {
     dao = MongoUserDao()
     val coll = dao.asInstanceOf[MongoUserDao].collection
-    coll.drop()
+    dao.clear()
     assume(coll.count() == 0, "Collection should be empty prior to running tests")
   }
+
+  // Use random new credentials for each new users (usernames MUST be unique); we don't care what anyway
+  def creds = getNewCreds
 
   trait CreatedByAdminUser {
     val adminUser = User.builder("admin") build()
