@@ -1,5 +1,6 @@
 package com.alertavert.sentinel.model
 
+import com.alertavert.sentinel.errors.NotAllowedException
 import com.mongodb.casbah.Imports.ObjectId
 
 import com.alertavert.sentinel.security.{Permission, Edit, Credentials}
@@ -22,26 +23,25 @@ class UserTest extends UnitSpec {
     val user = builder hasCreds creds build
   }
 
-  "A user" can "be created" in new UserBuilder {
-    val user = builder.build()
+  "A user" must "fail if created without credentials" in new UserBuilder {
+    intercept[NotAllowedException] {
+      val user = builder build
+    }
+  }
+
+  it can "be created with credentials" in new AuthenticatedUser  {
     assert(user != null)
-    assertResult("Bob") { user.firstName }
+    assert(user.checkCredentials(creds))
+    assert(!user.isActive)
   }
 
-  it can "have credentials" in new UserBuilder with UserCredentials {
-    val aUser = builder.hasCreds(creds.username, creds.hashedPassword, creds.salt).isActive.build
-    assert(aUser != null)
-    assert(aUser.checkCredentials(creds))
-    assert(aUser.isActive)
-  }
-
-  it should "have a string representation" in new UserBuilder {
+  it should "have a string representation" in new AuthenticatedUser {
     val userId = new ObjectId()
-    val firstName = "Bob"
-
-    val bob = builder.withId(userId).isActive.build()
+    val firstName = user.firstName
+    user.setId(userId)
+    user.activate
     assertResult(s"[$userId] $firstName  (Active)") {
-      bob.toString
+      user.toString
     }
   }
 
@@ -58,28 +58,25 @@ class UserTest extends UnitSpec {
     assert(aUser checkCredentials creds)
   }
 
-  it can "have no permissions by default" in new UserBuilder {
-    val bill = builder build()
-    bill.perms shouldBe empty
+  it can "have no permissions by default" in new AuthenticatedUser  {
+    user.perms shouldBe empty
   }
 
-  it can "have permissions added" in new UserBuilder {
-    val bill = builder build()
-    val editableResource = new Resource("notebook", bill)
+  it can "have permissions added" in new AuthenticatedUser {
+    val editableResource = new Resource("notebook", user)
     editableResource.allowedActions += Edit()
     val edit = new Permission(Edit(), editableResource)
-    edit.grantTo(bill)
-    bill.perms should have size 1
+    edit.grantTo(user)
+    user.perms should have size 1
   }
 
-  it should "be allowed to do stuff, with permission" in new UserBuilder {
-    val bill = builder build()
-    val editableResource = new Resource("foobaz", bill)
+  it should "be allowed to do stuff, with permission" in new AuthenticatedUser {
+    val editableResource = new Resource("foobaz", user)
     editableResource.allowedActions += Edit()
     val edit = new Permission(Edit(), editableResource)
-    edit.grantTo(bill)
+    edit.grantTo(user)
 
-    assert(edit.grantedTo(bill))
+    assert(edit.grantedTo(user))
   }
 
   it can "be authenticated, given username/password" in new AuthenticatedUser {

@@ -31,7 +31,6 @@ abstract class MongoDao[T <: HasId](val collection: MongoCollection) extends DAO
     val writeResult = collection += item
     val cmdResult = writeResult getLastError
 
-    // TODO: create app-specific exception and throw, with better error message
     if (! cmdResult.ok()) throw new DbException("Save failed: " + cmdResult.getErrorMessage)
     obj.setId(item.as[ObjectId] ("_id"))
     obj.id.get
@@ -48,5 +47,9 @@ abstract class MongoDao[T <: HasId](val collection: MongoCollection) extends DAO
     for {
       item <- collection find() toIterable
     } yield deserialize(item)
+  }
+
+  override def clear() {
+    collection remove MongoDBObject()
   }
 }

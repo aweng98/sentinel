@@ -1,5 +1,5 @@
 
-import com.alertavert.sentinel.errors.AuthenticationError
+import com.alertavert.sentinel.errors.{SentinelException, AuthenticationError}
 import models.resources.UsersResource
 
 import scala.concurrent.Future
@@ -54,7 +54,9 @@ package object security {
               throw new AuthenticationError())
           f(AuthenticatedRequest(user, request))
         } catch {
-          case ex: Exception => Results.Unauthorized(ex.getLocalizedMessage)
+          case ex: AuthenticationError => Results.Unauthorized(ex.getLocalizedMessage)
+          case ex: SentinelException => Results.Forbidden(ex.getLocalizedMessage)
+          case ex: Exception => Results.BadRequest(ex.getLocalizedMessage)
         }
     }
   }

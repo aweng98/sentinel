@@ -5,7 +5,7 @@ import com.alertavert.sentinel.model.{Resource, User}
 import org.bson.types.ObjectId
 import com.alertavert.sentinel.persistence.DAO
 import com.alertavert.sentinel.UnitSpec
-import com.alertavert.sentinel.security.{Grant, Permission}
+import com.alertavert.sentinel.security.{Credentials, Grant, Permission}
 
 
 class UserDaoTest extends UnitSpec with BeforeAndAfter {
@@ -15,22 +15,25 @@ class UserDaoTest extends UnitSpec with BeforeAndAfter {
   before {
     dao = MongoUserDao()
     val coll = dao.asInstanceOf[MongoUserDao].collection
-    coll.drop()
+    dao.clear()
     assume(coll.count() == 0, "Collection should be empty prior to running tests")
   }
 
+  // Use random new credentials for each new users (usernames MUST be unique); we don't care what anyway
+  def creds = getNewCreds
+
   trait CreatedByAdminUser {
-    val adminUser = User.builder("admin") build()
+    val adminUser = User.builder("admin") hasCreds creds build()
     val adminId = dao << adminUser
   }
 
   trait CreatedByOrdinaryUser extends CreatedByAdminUser {
-    val ordinaryUser = User.builder("Creator", "User") withId new ObjectId createdBy adminUser build()
+    val ordinaryUser = User.builder("Creator", "User") hasCreds creds withId new ObjectId createdBy adminUser build()
     val creatorId = dao << ordinaryUser
   }
 
   "when saving a valid user, we" should "get a valid OID" in new CreatedByOrdinaryUser {
-    val user = User.builder("bob", "foo") createdBy ordinaryUser build()
+    val user = User.builder("bob", "foo") createdBy ordinaryUser hasCreds creds build()
     val uid = dao << user
     assert (uid != null)
   }
@@ -46,7 +49,7 @@ class UserDaoTest extends UnitSpec with BeforeAndAfter {
   }
 
   it should "get the same ID, if previously set" in new CreatedByOrdinaryUser {
-    val user = User.builder("Joe", "blast") createdBy ordinaryUser build()
+    val user = User.builder("Joe", "blast") createdBy ordinaryUser hasCreds creds build()
     val uid = new ObjectId
     user.setId(uid)
     val newUid = dao << user
@@ -58,7 +61,7 @@ class UserDaoTest extends UnitSpec with BeforeAndAfter {
   }
 
   it should "have the creators' chain preserved" in new CreatedByOrdinaryUser {
-    val bob = User.builder("bob") createdBy ordinaryUser build()
+    val bob = User.builder("bob") createdBy ordinaryUser hasCreds creds build()
     val bobId = dao << bob
 
     val bobAgain = dao.find(bobId).getOrElse(fail("Could not retrieve a valid user (Bob)"))
@@ -79,9 +82,9 @@ class UserDaoTest extends UnitSpec with BeforeAndAfter {
     info("Before saving many users:")
     dao.findAll() foreach (u => info(u.toString))
     info("---------------------------")
-    val users = List(User.builder("alice") createdBy ordinaryUser build(),
-      User.builder("bob") createdBy ordinaryUser build(),
-      User.builder("charlie") createdBy ordinaryUser build())
+    val users = List(User.builder("alice") createdBy ordinaryUser hasCreds creds build(),
+      User.builder("bob") createdBy ordinaryUser hasCreds creds build(),
+      User.builder("charlie") createdBy ordinaryUser hasCreds creds build())
 
     users.foreach(dao << _)
     dao.findAll() map(_.firstName) should contain allOf ("alice", "bob", "charlie")

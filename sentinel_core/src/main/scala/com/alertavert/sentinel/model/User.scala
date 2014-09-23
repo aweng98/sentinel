@@ -3,6 +3,7 @@ package com.alertavert.sentinel.model
 //import language.postfixOps
 import java.util.Date
 
+import com.alertavert.sentinel.errors.NotAllowedException
 import com.alertavert.sentinel.security.{Permission, Credentials}
 import com.mongodb.casbah.Imports.ObjectId
 import com.alertavert.sentinel.persistence.{HasCreator, HasId}
@@ -21,7 +22,7 @@ import scala.collection.mutable
 class User() extends HasId with HasCreator {
   private var _firstName: String = _
   private var _lastName: String = _
-  private var _credentials: Credentials = Credentials.emptyCredentials
+  private var _credentials: Credentials = _
   private var _active: Boolean = _
   private var _lastSeen: Date = _
 
@@ -100,7 +101,6 @@ class User() extends HasId with HasCreator {
 }
 
 object User {
-  val unknown: User = builder("unknown") build()
 
   class Builder(val first: String, val last: String = "") {
     var id: ObjectId = null
@@ -150,8 +150,10 @@ object User {
       user.setId(id)
       user._firstName = first
       user._lastName = last
+      val x = s"$first $last"
       user._credentials = credentials match {
-        case None => Credentials.emptyCredentials
+        case None => throw new NotAllowedException(
+          s" Cannot create a user without valid credentials; please specify a username and password for $first $last")
         case Some(_) => credentials get
       }
       user.createdBy = created_by match {

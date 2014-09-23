@@ -7,6 +7,7 @@ import com.mongodb.casbah.Imports.ObjectId
  * Generic DAO definition.
  */
 trait DAO[T <: HasId] {
+  def clear(): Unit
 
   /**
    * Saves the item to the underlying persistence layer (eg, DB)

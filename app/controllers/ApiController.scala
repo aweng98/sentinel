@@ -27,8 +27,10 @@ object ApiController extends Controller {
 
   def userById(id: String) = Authenticated { implicit request =>
     // TODO: authorize request.user to access user.id details
-    val user = Json.toJson(UsersResource.getUserById(id))
-    Ok(user)
+    UsersResource.getUserById(id) match {
+      case None => NotFound
+      case Some(user) => Ok(Json.toJson(user))
+    }
   }
 
   def login = Action(BodyParsers.parse.json) {
@@ -44,9 +46,15 @@ object ApiController extends Controller {
       }
   }
 
+  /**
+   * POST /user/{id}
+   *
+   * @return
+   */
   def createUser = Authenticated(BodyParsers.parse.json) { implicit request =>
+    val user = UsersResource.createUser(request.body)
     // TODO: add Location header with URI of created resource
-    Created(UsersResource.createUser(request.body))
+    Created(Json.toJson(user))
   }
 
   def modifyUser(id: String) = TODO

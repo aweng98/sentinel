@@ -1,7 +1,9 @@
 package com.alertavert.sentinel.persistence
 
+import com.mongodb.casbah.commons.MongoDBObject
+import com.mongodb.casbah.commons.ValidBSONType.DBObject
 import com.mongodb.casbah.{MongoDB, MongoConnection, MongoURI}
-import com.alertavert.sentinel.persistence.mongodb.ActionSerializer
+import com.alertavert.sentinel.persistence.mongodb.{MongoUserDao, ActionSerializer}
 import com.alertavert.sentinel.errors.DbException
 
 /**
@@ -43,11 +45,20 @@ object DataAccessManager {
     conn = MongoConnection(mongoUri)
     db = conn.getDB(dbName)
 
+    // Recreate indexes if they were dropped
+    createIndexes()
+
     // TODO: I'm not sure this is the best place to register the hooks
     ActionSerializer register
   }
 
   def isReady: Boolean = conn != null
+
+  def createIndexes(): Unit = {
+    // TODO: factor out the creation of the indexes by reading a configuration file (JSON)
+    db.getCollection(MongoUserDao.USER_COLLECTION).ensureIndex(MongoDBObject("credentials.username" -> 1),
+      "ByUsername", true)
+  }
 
   def close() {
     if (conn != null) {
