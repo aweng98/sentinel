@@ -38,7 +38,7 @@ class PermissionSerializer extends MongoSerializer[Permission] {
 }
 
 
-class MongoUserDao(val userCollection: MongoCollection) extends MongoDao[User](userCollection)
+class MongoUserDao(override val collection: MongoCollection) extends MongoDao[User](collection)
   with MongoSerializer[User] {
 
   val credsSerializer = new CredentialsSerializer
@@ -70,7 +70,7 @@ class MongoUserDao(val userCollection: MongoCollection) extends MongoDao[User](u
     user
   }
 
-  def findByUsername(username: String): Option[User] = collection.findOne(
+  override def findByName(username: String): Option[User] = collection.findOne(
     MongoDBObject("credentials.username" -> username)) match {
     case None => None
     case Some(item) => Some(deserialize(item))

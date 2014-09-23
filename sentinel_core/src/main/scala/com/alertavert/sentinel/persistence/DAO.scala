@@ -33,6 +33,20 @@ trait DAO[T <: HasId] {
   def find(id: ObjectId): Option[T]
 
   /**
+   * Generic method to retrieve entities on the basis of their "natural" `name`
+   *
+   * Each derived DAO implementation is free to interpret the meaning of `name` as is most
+   * natural (or expedient) for the given entity; generally speaking,
+   * every entity in the system should have a "user-friendly" name, alongside with a unique `ID`;
+   * the user will be typically exposed to the former, admin users and support staff (as well as
+   * clients taking advantage of the API) will be mostly exposed to the latter.
+   *
+   * @param name the entity's name, which will be used to look it up
+   * @return if found, the entity, wrapped in an `Option`; otherwise, `None`
+   */
+  def findByName(name: String): Option[T]
+
+  /**
    * Removes the object whose ID matches, if any.
    *
    * @param id the unique ID of the object to remove

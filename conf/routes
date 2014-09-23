@@ -12,13 +12,19 @@ GET     /assets/*file               controllers.Assets.at(path="/public", file)
 POST    /login                      controllers.ApiController.login
 
 #
-# REST API
+#### REST API
 #
+# Users:
 GET     /user                       controllers.ApiController.users
 GET     /user/:id                   controllers.ApiController.userById(id)
 POST    /user                       controllers.ApiController.createUser
 PUT     /user/:id                   controllers.ApiController.modifyUser(id)
 
+# Organizations
+GET     /org                       controllers.ApiController.orgs
+GET     /org/:id                   controllers.ApiController.orgById(id)
+POST    /org                       controllers.ApiController.createOrg
+PUT     /org/:id                   controllers.ApiController.modifyOrg(id)
 
 #
 # Application status and configuration

@@ -57,6 +57,36 @@ object ApiController extends Controller {
     Created(Json.toJson(user))
   }
 
+  /**
+   * PUT /user/{id}
+   *
+   * Modify the user data with the incoming request's JSON body
+   *
+   * @param id the ID of the user to update
+   * @return
+   */
   def modifyUser(id: String) = TODO
 
+  def orgs = Authenticated { implicit request =>
+    Ok(Json.toJson(OrgsResource.getAllOrgs))
+  }
+
+  def orgById(id: String) = Authenticated { implicit request =>
+    // TODO: authorize request.user to access org.id details
+    OrgsResource.getOrgById(id) match {
+      case None => NotFound
+      case Some(org) => Ok(Json.toJson(org))
+    }
+  }
+
+  def createOrg = Authenticated(BodyParsers.parse.json) { implicit request =>
+    val newOrg = OrgsResource.createOrg(request.body)
+    // TODO: Add Location header with URI of created resource
+    Created(Json.toJson(newOrg))
+  }
+
+  def modifyOrg(id: String) = Authenticated(BodyParsers.parse.json) { implicit request =>
+    val org = OrgsResource.updateOrg(id, request.body)
+    Ok(Json.toJson(org))
+  }
 }

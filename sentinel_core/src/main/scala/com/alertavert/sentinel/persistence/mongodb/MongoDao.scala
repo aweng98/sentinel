@@ -44,6 +44,7 @@ abstract class MongoDao[T <: HasId](val collection: MongoCollection) extends DAO
    * @return a list of items found in the underlying storage
    */
   override def findAll(limit: Int, offset: Int): Iterable[T] = {
+    // TODO: implement the limit/offset functionality
     for {
       item <- collection find() toIterable
     } yield deserialize(item)

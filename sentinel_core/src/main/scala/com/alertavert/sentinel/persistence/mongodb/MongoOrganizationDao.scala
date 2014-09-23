@@ -8,8 +8,15 @@ import org.bson.types.ObjectId
 import java.util.Date
 import com.alertavert.sentinel.persistence.DataAccessManager
 
-class MongoOrganizationDao(val orgsCollection: MongoCollection) extends
-    MongoDao[Organization](orgsCollection) with MongoSerializer[Organization] {
+class MongoOrganizationDao(override val collection: MongoCollection) extends
+    MongoDao[Organization](collection) with MongoSerializer[Organization] {
+
+  override def findByName(name: String): Option[Organization] = collection.findOne(
+    MongoDBObject("name" -> name)) match {
+      case None => None
+      case Some(organization) => Some(deserialize(organization))
+    }
+
 
   override def serialize(org: Organization) = MongoDBObject(
     "name" -> org.name,

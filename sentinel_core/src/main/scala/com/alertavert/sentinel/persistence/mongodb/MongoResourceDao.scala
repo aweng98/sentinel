@@ -6,8 +6,8 @@ import com.alertavert.sentinel.security.Action
 import com.alertavert.sentinel.persistence.DataAccessManager
 import com.alertavert.sentinel.errors.{NotFoundException, NotAllowedException, DbException}
 
-class MongoResourceDao(val resourceCollection: MongoCollection) extends
-    MongoDao[Resource](resourceCollection) with MongoSerializer[Resource] {
+class MongoResourceDao(override val collection: MongoCollection) extends
+    MongoDao[Resource](collection) with MongoSerializer[Resource] {
 
   override def serialize(resource: Resource): MongoDBObject = {
     MongoDBObject(
@@ -30,6 +30,13 @@ class MongoResourceDao(val resourceCollection: MongoCollection) extends
 
     res
   }
+
+  override def findByName(name: String) = collection.findOne(MongoDBObject(
+      "name" -> name
+    )) match {
+      case None => None
+      case Some(resource) => Some(deserialize(resource))
+    }
 }
 
 object MongoResourceDao {

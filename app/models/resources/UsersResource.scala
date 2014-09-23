@@ -30,11 +30,11 @@ object UsersResource {
   }
 
   def getUserByUsername(username: String) = {
-    dao.findByUsername(username)
+    dao.findByName(username)
   }
 
   def authUser(username: String, password: String): User = {
-    dao.findByUsername(username) match {
+    dao.findByName(username) match {
       case None => throw new AuthenticationError(s"Cannot authenticate $username")
       case Some(user) => {
         if (!user.authenticate(username, password)) throw new AuthenticationError()
@@ -71,6 +71,4 @@ object UsersResource {
     dao << user
     user
   }
-
-
 }

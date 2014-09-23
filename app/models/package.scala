@@ -7,7 +7,7 @@ import scala.concurrent.Future
 import play.api.libs.json.{Json, Writes}
 import play.api.mvc._
 
-import com.alertavert.sentinel.model.User
+import com.alertavert.sentinel.model.{Organization, User}
 import com.alertavert.sentinel.security.Credentials
 import com.alertavert.sentinel.security.{encode, hashStrings}
 
@@ -35,6 +35,15 @@ package object models {
       "active" -> user.isActive,
       "last_seen" -> format.format(user.lastSeen),
       "credentials" -> Json.toJson(user.getCredentials)
+    )
+  }
+
+  implicit val orgsWrites = new Writes[Organization] {
+    def writes(org: Organization) = Json.obj(
+      "id" -> org.id.getOrElse(throw new IllegalStateException(
+        s"Organization $org has no valid ID")).toString,
+      "name" -> org.name,
+      "active" -> org.active
     )
   }
 }

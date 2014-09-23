@@ -15,7 +15,7 @@ abstract class UnitSpec[T] extends FlatSpec with Matchers with OptionValues with
     val prefix = "test-user"
     val newUsername = List(prefix, suffix) mkString "-"
     val dao = MongoUserDao()
-    dao.findByUsername(newUsername) match {
+    dao.findByName(newUsername) match {
       case None => Credentials(newUsername, "secret")
       case Some(user) => getNewCreds
     }

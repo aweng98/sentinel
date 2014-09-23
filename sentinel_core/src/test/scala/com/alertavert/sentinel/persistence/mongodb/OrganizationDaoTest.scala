@@ -13,7 +13,7 @@ class OrganizationDaoTest extends UnitSpec with BeforeAndAfter {
   var dao: DAO[Organization] = _
 
   trait OrgCreator {
-    val admin = User.builder("admin") hasCreds Credentials("admin", "secret") build()
+    val admin = User.builder("admin") hasCreds getNewCreds build()
     val userDao = MongoUserDao()
     admin.setId(userDao << admin)
   }
@@ -45,5 +45,12 @@ class OrganizationDaoTest extends UnitSpec with BeforeAndAfter {
     // This is necessary to ensure equality, all else being equal too:
     acme.setId(id)
     assert(acme_reborn.get === acme)
+  }
+
+  they can "be found by name" in new OrgCreator {
+    val testOrg = Organization.builder("test-org") createdBy admin build
+    val id = dao << testOrg
+    val foundIt = dao.findByName("test-org").getOrElse(fail("Could not retrieve org by name"))
+    assert(testOrg === foundIt)
   }
 }
