@@ -4,6 +4,8 @@
 
 import com.alertavert.sentinel.errors.{SentinelException, AuthenticationError}
 import models.resources.UsersResource
+import org.bson.types.ObjectId
+import play.Play
 
 import scala.concurrent.Future
 
@@ -53,8 +55,12 @@ package object models {
 
 package object security {
 
+   val SIGN_VALIDATE_KEY = "application.signature.validate"
+
   // TODO: Understand what really goes on behind the curtain
   // Code based on: https://www.playframework.com/documentation/2.0.2/ScalaActionsComposition
+
+  val shouldValidateSignature = Play.application.configuration.getBoolean(SIGN_VALIDATE_KEY)
 
   case class AuthenticatedRequest[A](user: User, request: Request[A])
     extends WrappedRequest(request)
@@ -62,8 +68,8 @@ package object security {
   def Authenticated[A](p: BodyParser[A])(f: AuthenticatedRequest[A] => Result) = {
     Action(p) { request =>
         try {
-          val user = validateHash(request).getOrElse(
-              throw new AuthenticationError())
+          val user = validateHash(request).getOrElse(throw new AuthenticationError(
+            "Cannot authenticate request"))
           f(AuthenticatedRequest(user, request))
         } catch {
           case ex: AuthenticationError => Results.Unauthorized(ex.getLocalizedMessage)
@@ -75,6 +81,7 @@ package object security {
 
   // TODO: the returned errors disclose too much information; replace with generic errors in Prod
   def validateHash[A](request: Request[A]): Option[User] = {
+
     val date = request.headers.get("Date").getOrElse(
       throw new AuthenticationError("Missing `Date:` header"))
 
@@ -83,26 +90,43 @@ package object security {
       throw new AuthenticationError("Missing `Authorization:` header"))
     val values = parseAuthHeader(auth)
 
+    // Retrieve the user, as we need it anyway, even if validation is disabled
     val username = values.getOrElse("username",
       throw new AuthenticationError("`username` key missing in Authorization header"))
-    val hash = values.getOrElse("hash",
-      throw new AuthenticationError("`hash` key missing in Authorization header"))
-    // TODO: some hashing negotiation - for now only SHA-256 supported
-    val user = UsersResource.getUserByUsername(username).getOrElse(
-      throw new AuthenticationError(s"$username is not a recognized username"))
-    val apiKey = user.getCredentials.apiKey
 
-    // TODO: verify that the Date this request is signed with is not a replay attack
-    val computedHash = encode(hashStrings(List(
-      apiKey,
-      date,
-      request.path,
-      request.body.toString
-    )))
-    // TODO: replace with a log.debug()
-    println(s"Computed hash: $computedHash")
-    if (computedHash == hash) Some(user) else throw new AuthenticationError(
-      "Hash values don't match")
+    if (shouldValidateSignature) {
+      val hash = values.getOrElse("hash",
+        throw new AuthenticationError("`hash` key missing in Authorization header"))
+      // TODO: some hashing negotiation - for now only SHA-256 supported
+      val user = UsersResource.getUserByUsername(username).getOrElse(
+        throw new AuthenticationError(s"$username is not a recognized username"))
+      val apiKey = user.getCredentials.apiKey
+
+      // TODO: verify that the Date this request is signed with is not a replay attack
+      val computedHash = encode(hashStrings(List(
+        apiKey,
+        date,
+        request.path,
+        request.body.toString
+      )))
+      // TODO: replace with a log.debug()
+      println(s"Computed hash: $computedHash")
+      if (computedHash == hash) Some(user)
+      else None
+    } else {
+      println("[WARN] Bypassing API signature check")
+      Some(madeUpUser(username))
+    }
+  }
+
+  /**
+   * Creates a bogus user, so that all authentication is bypassed.
+   * Only used for testing and development; DO NOT use in production
+   *
+   * @param username
+   */
+  private def madeUpUser(username: String) = {
+    User.builder(username) hasCreds(username, "abcdef123456", 123456) withId new ObjectId build()
   }
 
   private def parseAuthHeader(authHeader: String) = {
