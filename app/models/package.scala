@@ -1,4 +1,7 @@
 
+// Copyright AlertAvert.com (c) 2014. All rights reserved.
+// Commercial use or modification of this software without a valid license is expressly forbidden
+
 import com.alertavert.sentinel.errors.{SentinelException, AuthenticationError}
 import models.resources.UsersResource
 
