@@ -3,10 +3,12 @@
 
 package controllers
 
-import com.alertavert.sentinel.errors.AuthenticationError
+import com.alertavert.sentinel.errors.{DbException, AuthenticationError}
 import com.alertavert.sentinel.persistence.DataAccessManager
 import models._
 import models.resources._
+import org.slf4j.{Logger, LoggerFactory}
+import play.Play
 import play.api.libs.json._
 import play.api.mvc._
 import security.Authenticated
@@ -14,8 +16,17 @@ import security.Authenticated
 
 object ApiController extends Controller {
 
-  // TODO(marco): the DB URI must be read from configuration
-  DataAccessManager.init("mongodb://localhost/sentinel-test")
+  val logger = LoggerFactory.getLogger("API Controller")
+  logger.info("API Controller started")
+
+
+  DataAccessManager.init(AppController.configuration.dbUri)
+  if (!DataAccessManager.isReady) {
+    logger.error("Could not start the Data Access Manager, it is possible that the DB server" +
+      " may be down")
+    throw new DbException("Could not connect to the DB server (" +
+      AppController.configuration.dbUri + ")")
+  }
 
   // TODO(marco): this must be replaced with a suitable home page
   def index = Action {

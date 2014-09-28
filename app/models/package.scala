@@ -1,10 +1,11 @@
-
 // Copyright AlertAvert.com (c) 2014. All rights reserved.
 // Commercial use or modification of this software without a valid license is expressly forbidden
 
 import com.alertavert.sentinel.errors.{SentinelException, AuthenticationError}
+import controllers.AppController
 import models.resources.UsersResource
 import org.bson.types.ObjectId
+import org.slf4j.LoggerFactory
 import play.Play
 
 import scala.concurrent.Future
@@ -55,12 +56,11 @@ package object models {
 
 package object security {
 
-   val SIGN_VALIDATE_KEY = "application.signature.validate"
+
+  val logger = LoggerFactory.getLogger("security")
 
   // TODO: Understand what really goes on behind the curtain
   // Code based on: https://www.playframework.com/documentation/2.0.2/ScalaActionsComposition
-
-  val shouldValidateSignature = Play.application.configuration.getBoolean(SIGN_VALIDATE_KEY)
 
   case class AuthenticatedRequest[A](user: User, request: Request[A])
     extends WrappedRequest(request)
@@ -84,6 +84,8 @@ package object security {
 
     val date = request.headers.get("Date").getOrElse(
       throw new AuthenticationError("Missing `Date:` header"))
+    // TODO: verify that the Date this request is signed with is not a replay attack
+    logger.debug(s"Request sent at $date")
 
     // Extract the value pairs from the Auth header: username=foo;hash=xYzaa99==
     val auth = request.headers.get("Authorization").getOrElse(
@@ -94,7 +96,7 @@ package object security {
     val username = values.getOrElse("username",
       throw new AuthenticationError("`username` key missing in Authorization header"))
 
-    if (shouldValidateSignature) {
+    if (AppController.configuration.shouldValidate) {
       val hash = values.getOrElse("hash",
         throw new AuthenticationError("`hash` key missing in Authorization header"))
       // TODO: some hashing negotiation - for now only SHA-256 supported
@@ -102,7 +104,6 @@ package object security {
         throw new AuthenticationError(s"$username is not a recognized username"))
       val apiKey = user.getCredentials.apiKey
 
-      // TODO: verify that the Date this request is signed with is not a replay attack
       val computedHash = encode(hashStrings(List(
         apiKey,
         date,
@@ -110,11 +111,10 @@ package object security {
         request.body.toString
       )))
       // TODO: replace with a log.debug()
-      println(s"Computed hash: $computedHash")
-      if (computedHash == hash) Some(user)
-      else None
+      logger.debug(s"Computed hash: $computedHash")
+      if (computedHash == hash) Some(user) else None
     } else {
-      println("[WARN] Bypassing API signature check")
+      logger.warn("Bypassing API signature check")
       Some(madeUpUser(username))
     }
   }
@@ -123,7 +123,7 @@ package object security {
    * Creates a bogus user, so that all authentication is bypassed.
    * Only used for testing and development; DO NOT use in production
    *
-   * @param username
+   * @param username the newly created bogus user will have this username
    */
   private def madeUpUser(username: String) = {
     User.builder(username) hasCreds(username, "abcdef123456", 123456) withId new ObjectId build()

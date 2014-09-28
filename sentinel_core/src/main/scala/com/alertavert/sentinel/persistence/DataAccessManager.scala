@@ -12,14 +12,14 @@ import com.alertavert.sentinel.errors.DbException
 /**
  * Manage all accesses to a MongoDB via the underlying MongoClient.
  *
- * Prior to being used, this class needs to be initialized calling the ``init()`` method with a
- * valid URI (of the form ``mongodb://[host]:[port]/[db]``) and, once finished, it should be
- * closed by calling its ``close()`` method.
+ * Prior to being used, this class needs to be initialized calling the `init()` method with a
+ * valid URI (of the form `mongodb://[host]:[port]/[db]`) and, once finished, it should be
+ * closed by calling its `close()` method.
  *
  * <p>This DAM cannot be initialized multiple times (even with the same URI) and once closed
  * cannot be re-initialized or reused.
  *
- * <p>Ideally, ``init()`` should be called in the main program method, shortly after starting,
+ * <p>Ideally, `init()` should be called in the main program method, shortly after starting,
  * and then left alone until the program is about to terminate, when it can be safely closed.
  */
 object DataAccessManager {
@@ -35,10 +35,12 @@ object DataAccessManager {
    */
   def init(dbUri: String) {
     if (conn != null) {
-      throw new DbException("Data Manager already initialized; before re-initializing, " +
-        "please close the connection, by calling DataAccessManager.close()")
+      val oldUri = conn.getAddress().toString
+      throw new DbException(s"Data Manager already initialized to [$oldUri]; cannot re-initialize" +
+        s" to [$dbUri]")
     }
     if (closed) {
+      // TODO: this is probably too restrictive; we should be able to re-open a connection
       throw new DbException("The DB connection has been closed and cannot be safely re-opened " +
         "during the lifetime of this program")
     }
@@ -52,14 +54,15 @@ object DataAccessManager {
     createIndexes()
 
     // TODO: I'm not sure this is the best place to register the hooks
-    ActionSerializer register
+    ActionSerializer register()
   }
 
   def isReady: Boolean = conn != null
 
   def createIndexes(): Unit = {
     // TODO: factor out the creation of the indexes by reading a configuration file (JSON)
-    db.getCollection(MongoUserDao.USER_COLLECTION).ensureIndex(MongoDBObject("credentials.username" -> 1),
+    db.getCollection(MongoUserDao.USER_COLLECTION).ensureIndex(
+      MongoDBObject("credentials.username" -> 1),
       "ByUsername", true)
   }
 

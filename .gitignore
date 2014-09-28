@@ -24,3 +24,5 @@ tmp
 # Apple nonsense
 .DS_Store
 
+# Local application config override
+conf/override.conf
