@@ -41,7 +41,6 @@ creds.saltToString
 creds.hashedPassword
 creds.apiKey
 // JSON serializers
-
 import play.api.libs.json._
 
 implicit val credsWrites = new Writes[Credentials] {
@@ -63,4 +62,11 @@ implicit val userWrites = new Writes[User] {
 }
 
 val json = Json.toJson(marco)
+
+val myDict = Map(
+  "foo" -> "33",
+  "bar" -> "baz"
+)
+
+Json.toJson(myDict)
 

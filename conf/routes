@@ -30,3 +30,4 @@ PUT     /org/:id                   controllers.ApiController.modifyOrg(id)
 # Application status and configuration
 #
 GET     /health                     controllers.AppController.health
+GET     /status                     controllers.AppController.status
