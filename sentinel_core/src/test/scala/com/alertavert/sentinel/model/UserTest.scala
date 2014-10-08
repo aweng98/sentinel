@@ -41,9 +41,10 @@ class UserTest extends UnitSpec {
   it should "have a string representation" in new AuthenticatedUser {
     val userId = new ObjectId()
     val firstName = user.firstName
+    val username = user.getCredentials.username
     user.setId(userId)
     user.activate
-    assertResult(s"[$userId] $firstName  (Active)") {
+    assertResult(s"[$userId:$username] $firstName  (Active)") {
       user.toString
     }
   }
@@ -55,8 +56,8 @@ class UserTest extends UnitSpec {
     val hackerCreds = new Credentials("bob", guessedHashPwd, salt)
 
     // We would normally retrieve the user from the DB - we'll just create it anew here
-    val aUser = builder.hasCreds(creds.username, creds.hashedPassword, creds.salt).
-      isActive.build()
+    val aUser = builder.hasCreds(creds.username, creds.hashedPassword,
+      creds.salt).setActive().build()
     assert(! (aUser checkCredentials hackerCreds))
     assert(aUser checkCredentials creds)
   }

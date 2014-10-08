@@ -35,15 +35,11 @@ object DataAccessManager {
    */
   def init(dbUri: String) {
     if (conn != null) {
-      val oldUri = conn.getAddress().toString
-      throw new DbException(s"Data Manager already initialized to [$oldUri]; cannot re-initialize" +
-        s" to [$dbUri]")
+      // TODO: 2.7.3 no longer supports getAddress() - replace with the new method
+      // val oldUri = conn.getAddress().toString
+      throw new DbException(s"Data Manager already initialized")
     }
-    if (closed) {
-      // TODO: this is probably too restrictive; we should be able to re-open a connection
-      throw new DbException("The DB connection has been closed and cannot be safely re-opened " +
-        "during the lifetime of this program")
-    }
+
     val mongoUri = MongoURI(dbUri)
     val dbName = mongoUri.database.getOrElse(throw new IllegalArgumentException("MongoDB URI must" +
       " specify a database name (use: mongodb://host[:port]/database"))

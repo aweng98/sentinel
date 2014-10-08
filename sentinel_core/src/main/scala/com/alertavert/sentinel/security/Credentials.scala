@@ -39,9 +39,7 @@ class Credentials(val username: String,
    */
   private def createApiKey() = {
     md.reset()
-    // TODO(marco): add username to the hash
     md.update(hashedPassword getBytes)
-    md update saltToBytes
     md.digest
   }
 
@@ -58,7 +56,7 @@ class Credentials(val username: String,
    *
    * @return String representation of the salt value encoded in Base64
    */
-  def saltToString = base64Encoder.encode(saltToBytes)
+  def saltToString = base64Encoder.encode(saltToBytes())
 
   def canEqual(other: Any): Boolean = other.isInstanceOf[Credentials]
 

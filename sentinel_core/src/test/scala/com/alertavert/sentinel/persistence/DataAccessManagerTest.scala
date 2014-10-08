@@ -15,7 +15,7 @@ class DataAccessManagerTest extends UnitSpec {
 
   it should "return a valid DAO" in {
     val dao = MongoUserDao()
-    dao should not be (null)
+    dao should not be null
   }
 
   it should "throw if we try to initialize again" in {

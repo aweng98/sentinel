@@ -57,7 +57,6 @@ class UserDaoTest extends UnitSpec with BeforeAndAfter {
     user.setId(uid)
     val newUid = dao << user
     assert (uid === newUid)
-    info("changing data preserves the UID")
     user.resetPassword("foobar")
     val anUid = dao << user
     assert(uid === anUid)
@@ -82,9 +81,6 @@ class UserDaoTest extends UnitSpec with BeforeAndAfter {
   }
 
   "when saving many users, they" should "be found again" in new CreatedByOrdinaryUser {
-    info("Before saving many users:")
-    dao.findAll() foreach (u => info(u.toString))
-    info("---------------------------")
     val users = List(User.builder("alice") createdBy ordinaryUser hasCreds creds build(),
       User.builder("bob") createdBy ordinaryUser hasCreds creds build(),
       User.builder("charlie") createdBy ordinaryUser hasCreds creds build())
@@ -92,8 +88,5 @@ class UserDaoTest extends UnitSpec with BeforeAndAfter {
     users.foreach(dao << _)
     dao.findAll() map(_.firstName) should contain allOf ("alice", "bob", "charlie")
     dao.findAll() should have size 5
-    info("After saving many users:")
-    dao.findAll() foreach (u => info(u.toString))
-    info("---------------------------")
   }
 }

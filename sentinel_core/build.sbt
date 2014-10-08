@@ -4,7 +4,7 @@ name := "sentinel-core"
 
 version := "0.2"
 
-scalaVersion := "2.10.4"
+scalaVersion := "2.11.1"
 
 organization := "AlertAvert.com"
 
@@ -14,13 +14,13 @@ scalacOptions ++= Seq("-deprecation", "-feature", "-language:postfixOps")
 // set the initial commands when entering 'console' only
 initialCommands in console := "import com.alertavert.sentinel._"
 
-// AKKA Actors dependency
-resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
+// To enable correct test execution for those tests needing
+// a clean slate in the db
+parallelExecution in Test := false
+
 
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "2.2.1" % "test",
-  "org.mongodb" %% "casbah" % "2.5.0",
-  "com.typesafe.akka" %% "akka-actor" % "2.3.1",
-  "org.slf4j" % "slf4j-api" % "1.6.4",
-  "org.slf4j" % "slf4j-simple" % "1.6.4"
+  "org.mongodb" %% "casbah" % "2.7.3",
+  "org.slf4j" % "slf4j-api" % "1.6.4"
 )

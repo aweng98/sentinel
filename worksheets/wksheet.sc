@@ -27,7 +27,7 @@ val builder = User.builder("marco")
 
 val marco = builder.withId(new ObjectId("53fd79f5e4b0be5b2144c836"))
                    .hasCreds("marco", "foobaz", 3345)
-                   .isActive
+                   .setActive()
                    .build()
 
 println(marco)
@@ -70,3 +70,5 @@ val myDict = Map(
 
 Json.toJson(myDict)
 
+val jsArr = """[{"id": 2, "name": "Joe"}, {"id": 3, "name": "Bob"}]"""
+val jsonRepr = Json.toJson(jsArr)

@@ -82,8 +82,8 @@ class User() extends HasId with HasCreator {
       case true => "Active"
       case false => "Disabled"
     }
-
-    s"[$userId] $firstName $lastName ($enabled)"
+    val username = _credentials.username
+    s"[$userId:$username] $firstName $lastName ($enabled)"
   }
 
 
@@ -138,7 +138,7 @@ object User {
       this
     }
 
-    def isActive = {
+    def setActive(active: Boolean = true) = {
       this.active = true
       this
     }

@@ -10,7 +10,7 @@ import play.Play
 
 import scala.concurrent.Future
 
-import play.api.libs.json.{Json, Writes}
+import play.api.libs.json._
 import play.api.mvc._
 
 import com.alertavert.sentinel.model.{Organization, User}
@@ -33,6 +33,7 @@ package object models {
 
   implicit val userWrites = new Writes[User] {
     val format = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss zzz")
+
     def writes(user: User) = Json.obj(
       "id" -> user.id.getOrElse(throw new IllegalStateException("User " +
         user.getCredentials.username + " has no valid ID")).toString,
@@ -42,6 +43,26 @@ package object models {
       "last_seen" -> format.format(user.lastSeen),
       "credentials" -> Json.toJson(user.getCredentials)
     )
+  }
+
+  /**
+   * Deserializes the JSON for the [[User]] model, as returned by the API call.
+   */
+  implicit object UserReads extends Reads[User] {
+    def reads(json: JsValue): JsResult[User] = {
+      val id = (json \ "id").asOpt[String].orNull
+      val fname = (json \ "first_name").asOpt[String].getOrElse("")
+      val lname = (json \ "last_name").asOpt[String].getOrElse("")
+      val uname = (json \ "credentials" \ "username").as[String]
+      val pwd = (json \ "credentials" \ "password").asOpt[String].getOrElse("")
+      val active = (json \ "active").asOpt[Boolean].getOrElse(false)
+
+      val builder = (User.builder(fname, lname) hasCreds Credentials(uname, pwd)
+        setActive active)
+      if ((id != null) && ObjectId.isValid(id)) builder withId new ObjectId(id)
+
+      JsSuccess(builder build())
+    }
   }
 
   implicit val orgsWrites = new Writes[Organization] {
@@ -99,7 +120,6 @@ package object security {
     if (AppController.configuration.shouldValidate) {
       val hash = values.getOrElse("hash",
         throw new AuthenticationError("`hash` key missing in Authorization header"))
-      // TODO: some hashing negotiation - for now only SHA-256 supported
       val user = UsersResource.getUserByUsername(username).getOrElse(
         throw new AuthenticationError(s"$username is not a recognized username"))
       val apiKey = user.getCredentials.apiKey
@@ -110,7 +130,6 @@ package object security {
         request.path,
         request.body.toString
       )))
-      // TODO: replace with a log.debug()
       logger.debug(s"Computed hash: $computedHash")
       if (computedHash == hash) Some(user) else None
     } else {

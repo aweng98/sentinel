@@ -1,8 +1,9 @@
 // Copyright (c) 2014 AlertAvert.com.  All rights reserved.
 
+
 name := "sentinel"
 
-version := "0.1"
+version := "0.2-SNAPSHOT"
 
 organization := "AlertAvert.com"
 
@@ -16,11 +17,10 @@ lazy val sentinel = (project in file("."))
     .aggregate(sentinel_core)
     .dependsOn(sentinel_core)
 
-scalaVersion := "2.10.4"
+scalaVersion := "2.11.1"
 
 libraryDependencies ++= Seq(
-  jdbc,
-  anorm,
-  cache,
-  ws
+  "org.scalatest" %% "scalatest" % "2.2.1" % "test",
+  "org.scalatestplus" %% "play" % "1.2.0" % "test",
+  cache
 )
