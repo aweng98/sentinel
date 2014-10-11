@@ -35,14 +35,19 @@ package object models {
     val format = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss zzz")
 
     def writes(user: User) = Json.obj(
-      "id" -> user.id.getOrElse(throw new IllegalStateException("User " +
-        user.getCredentials.username + " has no valid ID")).toString,
-      "first_name" -> user.firstName,
-      "last_name" -> user.lastName,
-      "active" -> user.isActive,
-      "last_seen" -> format.format(user.lastSeen),
-      "credentials" -> Json.toJson(user.getCredentials)
-    )
+        "id" -> user.id.getOrElse(throw new IllegalStateException("User " +
+          user.getCredentials.username + " has no valid ID")).toString,
+        "first_name" -> user.firstName,
+        "last_name" -> user.lastName,
+        "active" -> user.isActive,
+        "last_seen" -> format.format(user.lastSeen),
+        "credentials" -> Json.toJson(user.getCredentials),
+        "created_when" -> format.format(user.createdAt),
+        "created_by" -> (user.createdBy match {
+          case None => ""
+          case Some(usr) => usr.id.toString
+        })
+      )
   }
 
   /**
@@ -50,18 +55,27 @@ package object models {
    */
   implicit object UserReads extends Reads[User] {
     def reads(json: JsValue): JsResult[User] = {
-      val id = (json \ "id").asOpt[String].orNull
+      val id = (json \ "id").asOpt[ObjectId].orNull
       val fname = (json \ "first_name").asOpt[String].getOrElse("")
       val lname = (json \ "last_name").asOpt[String].getOrElse("")
       val uname = (json \ "credentials" \ "username").as[String]
       val pwd = (json \ "credentials" \ "password").asOpt[String].getOrElse("")
       val active = (json \ "active").asOpt[Boolean].getOrElse(false)
 
-      val builder = (User.builder(fname, lname) hasCreds Credentials(uname, pwd)
+      val builder = (User.builder(fname, lname) withId id hasCreds Credentials(uname, pwd)
         setActive active)
-      if ((id != null) && ObjectId.isValid(id)) builder withId new ObjectId(id)
-
       JsSuccess(builder build())
+    }
+  }
+
+  implicit val oidReads = new Reads[ObjectId] {
+    def reads(json: JsValue) = {
+      val oid = json.asOpt[String] match {
+        case None => null
+        case Some(s) => if (ObjectId.isValid(s)) new ObjectId(s) else throw new IllegalArgumentException(s"$s is not " +
+          "a valid ObjectId")
+      }
+      JsSuccess(oid)
     }
   }
 
@@ -72,6 +86,18 @@ package object models {
       "name" -> org.name,
       "active" -> org.active
     )
+  }
+
+  implicit val orgReads = new Reads[Organization] {
+    def reads(json: JsValue) = {
+      val id = (json \ "id").asOpt[ObjectId].orNull
+      val orgName = (json \ "name").as[String]
+      val active = (json \ "active").asOpt[Boolean] match {
+        case None => false
+        case Some(b) => b
+      }
+      JsSuccess(Organization.builder(orgName) withId id setActive active build)
+    }
   }
 }
 

@@ -23,14 +23,14 @@ class AppControllerSpec extends PlaySpec with Results with OneAppPerSuite {
   class TestController() extends Controller with AppController
 
   "App server" should {
-    "should be healthy" in {
+    "be healthy" in {
       val controller = new TestController
       val result = controller.health().apply(FakeRequest())
       val bodyText = contentAsString(result)
       bodyText mustBe "Ok"
     }
 
-    "should return valid status" in {
+    "return valid status" in {
       val controller = new TestController
       val result = controller.status().apply(FakeRequest())
       val jsonResult = contentAsJson(result)

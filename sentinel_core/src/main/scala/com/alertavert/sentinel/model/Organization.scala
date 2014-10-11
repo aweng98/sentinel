@@ -64,34 +64,43 @@ class Organization(val name: String) extends HasId with HasCreator {
 
 object Organization {
   class Builder(val name: String) {
-    private val _org = new Organization(name)
 
-    def withId(id: ObjectId): Builder = {
-      _org.setId(id)
+    private var id: Option[ObjectId] = None
+    private var active: Boolean = false
+    private var creator: Option[User] = None
+    private var _created: Date = new Date()
+
+    def withId(oid: ObjectId): Builder = {
+      id = Some(oid)
       this
     }
 
     def createdBy(user: User) = {
-      _org.createdBy = Some(user)
+      creator = Some(user)
       this
     }
 
     def setActive(active: Boolean = true) = {
-      if (active) _org.activate() else _org.disable()
+      this.active = active
       this
     }
 
     def created(when: Date) = {
-      _org.createdAt = when
+      _created = when
       this
     }
 
     def build: Organization = {
-      _org
+      val org = new Organization(name)
+      if (this.active) org.activate()
+      org.id = id
+      org.createdAt = _created
+      org.createdBy = creator
+      org
     }
   }
 
   val EmptyOrg = new Organization("NewCo")
 
-  def builder(org_name: String): Builder = new Builder(org_name)
+  def builder(orgName: String): Builder = new Builder(orgName)
 }

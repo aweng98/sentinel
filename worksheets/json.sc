@@ -72,3 +72,15 @@ implicit def tupleReads: Reads[(String, Int)] =
 
 (json \ "items").as[Seq[(String, Int)]]
 
+val jsnon = Json.parse("""{"foo": 3, "bar": true}""")
+
+try {
+  val bar = (jsnon \ "bar2").asOpt[Boolean] match {
+    case None => false
+    case Some(b) => b
+  }
+  println(s"This is bar: $bar")
+
+} catch {
+  case ex: Exception => println("ex: " + ex.getMessage)
+}
