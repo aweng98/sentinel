@@ -24,8 +24,8 @@ object OrgsResource {
     dao.findAll()
   }
 
-  def getOrgById(id: String) = {
-    dao.find(new ObjectId(id))
+  def getOrgById(id: ObjectId) = {
+    dao.find(id)
   }
 
   def getOrgByName(name: String) = {
@@ -42,26 +42,32 @@ object OrgsResource {
 
   def updateOrg(id: String, request: JsValue) = {
     val org = parseOrgAndCheckName(request)
-    val name = org.name
-    val orgId = org.id.getOrElse("")
-    if (org.id.nonEmpty && (org.id.get != new ObjectId(id))) throw new NotAllowedException(
-      s"[$id] A different organization [$orgId] already exists with the new name ($name)"
-    )
-    org.setId(new ObjectId(id))
-    dao << org
+    val orgId = new ObjectId(id)
+    if (org.id.nonEmpty && (org.id.get != orgId)) throw new NotAllowedException(
+      s"[$id] A different organization [$orgId] already exists with the new name (${org.name})"
+    ) else {
+      org.setId(orgId)
+      dao << org
+    }
     org
   }
 
-  private def parseOrgAndCheckName(request: JsValue) = {
+  /**
+   * Parses the JSON request into an [[Organization]] object and, if the name matches an existing
+   * org in the db, it will retrieve the ID and will fill it in
+   *
+   * @param request a JSON representation of an [[Organization]]
+   * @return the object parsed and, optionally, a matching ID
+   */
+  private def parseOrgAndCheckName(request: JsValue): Organization = {
     val name = (request \ "name").as[String]
     val active = (request \ "active").as[Boolean]
     val builder = Organization.builder(name).setActive(active)
 
     // Organization names are supposed to be unique: if this already exists, we'll retrieve its ID
     getOrgByName(name) match {
-      case None =>
-      case Some(organization) => builder withId organization.id.get
+      case None => builder.build
+      case Some(organization) => builder withId organization.id.get build
     }
-    builder.build
   }
 }

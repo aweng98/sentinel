@@ -62,27 +62,6 @@ class UserTest extends UnitSpec {
     assert(aUser checkCredentials creds)
   }
 
-  it can "have no permissions by default" in new AuthenticatedUser  {
-    user.perms shouldBe empty
-  }
-
-  it can "have permissions added" in new AuthenticatedUser {
-    val editableResource = new Resource("notebook", user)
-    editableResource.allowedActions += Edit()
-    val edit = new Permission(Edit(), editableResource)
-    edit.grantTo(user)
-    user.perms should have size 1
-  }
-
-  it should "be allowed to do stuff, with permission" in new AuthenticatedUser {
-    val editableResource = new Resource("foobaz", user)
-    editableResource.allowedActions += Edit()
-    val edit = new Permission(Edit(), editableResource)
-    edit.grantTo(user)
-
-    assert(edit.grantedTo(user))
-  }
-
   it can "be authenticated, given username/password" in new AuthenticatedUser {
     assert(user authenticate("anUser", "andHisPwd"))
   }

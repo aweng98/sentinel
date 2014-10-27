@@ -3,6 +3,7 @@
 
 package com.alertavert.sentinel.persistence.mongodb
 
+import com.alertavert.sentinel.errors.NotAllowedException
 import com.mongodb.casbah.commons.TypeImports._
 
 import language.postfixOps
@@ -45,20 +46,14 @@ class MongoUserDao(override val collection: MongoCollection) extends MongoDao[Us
   with MongoSerializer[User] {
 
   val credsSerializer = new CredentialsSerializer
-  val permsSerializer = new PermissionSerializer
 
   override def serialize(user: User): MongoDBObject = {
-    val permissions = for {
-      p <- user.perms
-    } yield permsSerializer.serialize(p)
-
     val userObj = MongoDBObject(
       "first" -> user.firstName,
       "last" -> user.lastName,
       "credentials" -> credsSerializer.serialize(user.getCredentials),
       "active" -> user.isActive,
-      "last_seen" -> user.lastSeen,
-      "permissions" -> permissions
+      "last_seen" -> user.lastSeen
     )
     userObj
   }
@@ -67,9 +62,6 @@ class MongoUserDao(override val collection: MongoCollection) extends MongoDao[Us
     val user = (User.builder(item.as[String]("first"), item.as[String]("last"))
       hasCreds credsSerializer.deserialize(item.as[BasicDBObject]("credentials"))
       lastSeenAt item.as[Date]("last_seen")).build()
-    val permsList = item.as[MongoDBList]("permissions") map(p => permsSerializer.deserialize(p
-      .asInstanceOf[BasicDBObject]))
-    user.perms ++= permsList
     user
   }
 
@@ -77,6 +69,22 @@ class MongoUserDao(override val collection: MongoCollection) extends MongoDao[Us
     MongoDBObject("credentials.username" -> username)) match {
     case None => None
     case Some(item) => Some(deserialize(item))
+  }
+
+  /**
+   * @inheritdoc
+   *
+   * <p>This verifies that the username for the new `user` is not already taken; if it is,
+   * it checks that this is an update operation and the IDs match.
+   *
+   * @param user the new [[User]] to upsert in the DB
+   */
+  override def beforeUpsert(user: User): Unit = {
+    findByName(user.getCredentials.username) match {
+      case Some(existUser) => if (!existUser.id.equals(user.id)) throw new NotAllowedException(
+        s"Username must be unique - user [${existUser}] already in DB")
+      case None =>
+    }
   }
 }
 

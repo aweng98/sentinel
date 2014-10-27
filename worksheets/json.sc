@@ -1,4 +1,4 @@
-import com.alertavert.sentinel.model.User
+import com.alertavert.sentinel.model.{Organization, User}
 import play.api.libs.json.{JsUndefined, JsArray, JsValue, Json}
 import scala.Int
 
@@ -84,3 +84,16 @@ try {
 } catch {
   case ex: Exception => println("ex: " + ex.getMessage)
 }
+
+
+val org = Organization.builder("foo") build
+val org2 = Organization.builder("foo") build
+val org3 = Organization.builder("foo") build
+
+val ps = Map(
+  org -> "user",
+  org2 -> "admin",
+  org3 -> "buzz"
+)
+
+Json.toJson(ps.map(x => s"""{"org": "${x._1.name}", "role": "${x._2}"}"""))

@@ -90,22 +90,6 @@ class Permission(val action: Action, val resource: Resource) {
 
   require(resource.allowedActions contains action)
 
-  // TODO: this needs some guard: ie, verifying that the 'grantor' has the permission to Grant on
-  // this Asset
-  def grantTo(user: User) {
-    user.perms = user.perms :+ this
-  }
-
-  def grantedTo(user: User) = {
-    user.perms.contains(this)
-  }
-
-  def revoke(user: User) = {
-    if (grantedTo(user)) {
-      user.perms = user.perms.filterNot(_ != this)
-    }
-  }
-
   override def hashCode(): Int = 31 * action.hashCode() * resource.hashCode()
 
   override def equals(that: Any): Boolean = that match {
@@ -121,14 +105,6 @@ class Permission(val action: Action, val resource: Resource) {
 
 object Permission {
 
-  def grant(action: Action, resource: Resource, user: User) {
-    val perm = new Permission(action, resource)
-    perm.grantTo(user)
-  }
-
-  def grant(actions: Seq[Action], resource: Resource, user: User) {
-    for (action <- actions) {
-      grant(action, resource, user)
-    }
-  }
+  type Role = List[Permission]
 }
+

@@ -72,8 +72,8 @@ package object models {
     def reads(json: JsValue) = {
       val oid = json.asOpt[String] match {
         case None => null
-        case Some(s) => if (ObjectId.isValid(s)) new ObjectId(s) else throw new IllegalArgumentException(s"$s is not " +
-          "a valid ObjectId")
+        case Some(s) => if (ObjectId.isValid(s)) new ObjectId(s)
+                        else throw new IllegalArgumentException(s"$s is not a valid ObjectId")
       }
       JsSuccess(oid)
     }
@@ -81,7 +81,7 @@ package object models {
 
   implicit val orgsWrites = new Writes[Organization] {
     def writes(org: Organization) = Json.obj(
-      "id" -> org.id.getOrElse(throw new IllegalStateException(
+      "id" -> org.id.getOrElse(throw new IllegalArgumentException(
         s"Organization $org has no valid ID")).toString,
       "name" -> org.name,
       "active" -> org.active
@@ -98,6 +98,14 @@ package object models {
       }
       JsSuccess(Organization.builder(orgName) withId id setActive active build)
     }
+  }
+
+  implicit val orgsRoleWrites = new Writes[(Organization, String)] {
+    def writes(orgRole: (Organization, String)) = Json.obj(
+      "organization" -> orgRole._1.id.getOrElse(
+        throw new IllegalArgumentException("Missing Org " + "ID")).toString,
+      "role" -> orgRole._2
+    )
   }
 }
 

@@ -1,3 +1,5 @@
+import com.alertavert.sentinel.model.Organization
+
 // Copyright AlertAvert.com (c) 2014. All rights reserved.
 // Commercial use or modification of this software without a valid license is expressly forbidden
 
@@ -13,5 +15,3 @@ pairs
 val foos = List("fofo", "babo", "cuco")
 
 ("" /: foos)(_ + _.toUpperCase)
-
-

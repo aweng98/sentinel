@@ -3,31 +3,37 @@
 # ~~~~
 
 # Home page
-GET     /                           controllers.ApiController.index
+GET           /                          controllers.ApiController.index
 
 # Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file               controllers.Assets.at(path="/public", file)
+GET           /assets/*file              controllers.Assets.at(path="/public", file)
 
 # User login - returns the API Key
-POST    /login                      controllers.ApiController.login
+POST          /login                     controllers.ApiController.login
 
 #
 #### REST API
 #
 # Users:
-GET     /user                       controllers.ApiController.users
-GET     /user/:id                   controllers.ApiController.userById(id)
-POST    /user                       controllers.ApiController.createUser
-PUT     /user/:id                   controllers.ApiController.modifyUser(id)
+GET           /user                      controllers.ApiController.users
+GET           /user/:id                  controllers.ApiController.userById(id)
+POST          /user                      controllers.ApiController.createUser
+PUT           /user/:id                  controllers.ApiController.modifyUser(id)
 
 # Organizations
-GET     /org                       controllers.ApiController.orgs
-GET     /org/:id                   controllers.ApiController.orgById(id)
-POST    /org                       controllers.ApiController.createOrg
-PUT     /org/:id                   controllers.ApiController.modifyOrg(id)
+GET           /org                       controllers.ApiController.orgs
+GET           /org/:id                   controllers.ApiController.orgById(id)
+POST          /org                       controllers.ApiController.createOrg
+PUT           /org/:id                   controllers.ApiController.modifyOrg(id)
+
+# Users - Orgs
+GET           /user/:id/org              controllers.ApiController.getUsersOrgs(id)
+GET           /org/:id/user              controllers.ApiController.getAllUsersForOrg(id)
+POST          /user/:uid/org/:oid        controllers.ApiController.assocUserOrg(uid, oid)
+DELETE        /user/:uid/org/:oid        controllers.ApiController.removeAssocUserOrg(uid, oid)
 
 #
 # Application status and configuration
 #
-GET     /health                     controllers.AppController.health
-GET     /status                     controllers.AppController.status
+GET           /health                    controllers.AppController.health
+GET           /status                    controllers.AppController.status

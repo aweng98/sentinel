@@ -60,6 +60,8 @@ object DataAccessManager {
     db.getCollection(MongoUserDao.USER_COLLECTION).ensureIndex(
       MongoDBObject("credentials.username" -> 1),
       "ByUsername", true)
+
+    // TODO: add indexes for the user/org assoc collection
   }
 
   def close() {

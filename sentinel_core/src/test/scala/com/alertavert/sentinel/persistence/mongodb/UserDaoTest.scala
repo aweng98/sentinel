@@ -6,9 +6,10 @@ package com.alertavert.sentinel.persistence.mongodb
 import org.scalatest._
 import com.alertavert.sentinel.model.{Resource, User}
 import org.bson.types.ObjectId
+import com.alertavert.sentinel.errors.NotAllowedException
 import com.alertavert.sentinel.persistence.DAO
 import com.alertavert.sentinel.UnitSpec
-import com.alertavert.sentinel.security.{Credentials, Grant, Permission}
+import com.alertavert.sentinel.security._
 
 
 class UserDaoTest extends UnitSpec with BeforeAndAfter {
@@ -75,8 +76,9 @@ class UserDaoTest extends UnitSpec with BeforeAndAfter {
 
   it can "be saved with permissions set" in new CreatedByOrdinaryUser {
     val resource = new Resource("buzz", ordinaryUser)
+    resource.allowedActions ++: List(Create(), Edit())
     MongoResourceDao() << resource
-    Permission.grant(Grant(), resource, ordinaryUser)
+    // TODO: implement this test
     dao << ordinaryUser
   }
 
@@ -88,5 +90,19 @@ class UserDaoTest extends UnitSpec with BeforeAndAfter {
     users.foreach(dao << _)
     dao.findAll() map(_.firstName) should contain allOf ("alice", "bob", "charlie")
     dao.findAll() should have size 5
+  }
+
+  "saving multiple users with the same username" should "cause an error" in
+    new CreatedByOrdinaryUser {
+      intercept[NotAllowedException] {
+        val usr1 = User.builder("bob") hasCreds Credentials("bob", "foo") build()
+        val usr2 = User.builder("BigBob") hasCreds Credentials("bob", "baz") build()
+
+        val id1 = dao << usr1
+        val id2 = dao << usr2
+
+        id1 should equal (id2)
+      }
+
   }
 }

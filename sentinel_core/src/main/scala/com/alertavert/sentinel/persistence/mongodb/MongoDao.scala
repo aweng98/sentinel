@@ -30,6 +30,7 @@ abstract class MongoDao[T <: HasId](val collection: MongoCollection) extends DAO
     (collection -= MongoDBObject("_id" -> id)).getN == 1
 
   override def upsert(obj: T): ObjectId = {
+    beforeUpsert(obj)
     val item = serialize(obj)
     val writeResult = collection += item
     val cmdResult = writeResult getLastError
@@ -53,6 +54,9 @@ abstract class MongoDao[T <: HasId](val collection: MongoCollection) extends DAO
     } yield deserialize(item)
   }
 
+  /**
+   * Removes all documents from the collection, but does not `drop` it, so indexes are retained.
+   */
   override def clear() {
     collection remove MongoDBObject()
   }

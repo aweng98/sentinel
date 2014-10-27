@@ -9,24 +9,47 @@ package models.resources
  * Created by marco on 9/1/14.
  */
 
-import com.alertavert.sentinel.errors.{AuthenticationError, NotAllowedException}
-import com.alertavert.sentinel.model.User
-import com.alertavert.sentinel.persistence.mongodb.MongoUserDao
+import com.alertavert.sentinel.errors.{NotFoundException, AuthenticationError, NotAllowedException}
+import com.alertavert.sentinel.model.{Organization, User}
+import com.alertavert.sentinel.persistence.mongodb.{UserOrgsAssocDao, MongoUserDao}
 import models._
 import org.bson.types.ObjectId
 
 import play.api.libs.json.JsValue
+import play.api.mvc.AnyContent
 
 object UsersResource {
 
   val dao = MongoUserDao()
 
+  def associateWithOrganization(uid: ObjectId, oid: ObjectId, request: JsValue) = {
+    val user = getUserById(uid).getOrElse(throw new NotFoundException(uid, "Not a valid user"))
+    val org = OrgsResource.getOrgById(oid).getOrElse(throw new NotFoundException(oid,
+      "Not a valid Organization"))
+    val role = (request \ "role").as[String]
+    try {
+      val currentAssociations = UserOrgsAssocDao().findAll(user)
+      UserOrgsAssocDao().associate(user, currentAssociations :+ (org, role))
+    } catch {
+      case ex: NotFoundException => UserOrgsAssocDao().associate(user, Seq((org, role)))
+      case ex: Exception => throw ex
+    }
+  }
+
+  def getOrgsForUser(id: ObjectId): Map[Organization, String] = {
+    getUserById(id) match {
+      case None => throw new NotFoundException(id, "Not a valid user")
+      case Some(user) => UserOrgsAssocDao().findAll(user).toMap
+    }
+  }
+
+
   def getAllUsers = {
     dao.findAll()
   }
 
-  def getUserById(id: String) = {
-    dao.find(new ObjectId(id))
+  def getUserById(id: ObjectId) = {
+    dao.find(id)
   }
 
   def getUserByUsername(username: String) = {
@@ -54,11 +77,6 @@ object UsersResource {
    * @return the newly created `User`
    */
   def createUser(request: JsValue) = {
-//    val first = (request \ "first_name").as[String]
-//    val last = (request \ "last_name").as[String]
-//    val username = (request \ "username").as[String]
-//    val password = (request \ "password").as[String]
-
     val user = request.as[User]
     // First ensure the user does not exist already:
     val username = user.getCredentials.username
@@ -66,10 +84,6 @@ object UsersResource {
       case None =>
       case Some(_) => throw new NotAllowedException(s"$username already exists")
     }
-//    // Create a new set of credentials from the username/password
-//    val creds = Credentials.createCredentials(username, password)
-//    val user = User builder(first, last) hasCreds creds build()
-
     dao << user
     user
   }

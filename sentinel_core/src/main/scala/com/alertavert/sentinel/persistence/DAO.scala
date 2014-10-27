@@ -23,6 +23,23 @@ trait DAO[T <: HasId] {
    */
   def <<(item: T): ObjectId = upsert(item)
 
+  /**
+   * Hook for derived classes that need to verify (eg, avoid duplicated fields for unique
+   * indexes) the `item` is valid for insertion
+   *
+   * <p>This method will be called before [[upsert()]] and by default does nothing; override if
+   * you need specialized behavior.
+   *
+   * @param item the item to insert
+   */
+  def beforeUpsert(item: T) { }
+
+  /**
+   * Inserts `item` in the collection, or updates it if it already exists
+   *
+   * @param item the item to insert
+   * @return
+   */
   def upsert(item: T): ObjectId
 
   /**

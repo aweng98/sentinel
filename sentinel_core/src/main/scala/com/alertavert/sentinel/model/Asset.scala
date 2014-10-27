@@ -27,6 +27,14 @@ trait Asset extends HasId with HasCreator {
   /** Note that the ``owner`` of an ``asset`` may not necessarily be the ``creator`` */
   var owner: User
 
+  /** An optional `asset type` that will be used in the asset's representation,
+    * as well as in the `path` that uniquely identifies it.
+    *
+    * Subclasses and concrete implementations of this trait should override this value with a
+    * more specific type name.
+    */
+  val assetType: String = "asset"
+
   // by default, assume the owner is the creator too
   this.createdBy = Some(owner)
 
@@ -34,12 +42,15 @@ trait Asset extends HasId with HasCreator {
   // overridden during retrieval form the persistence layer
   setId(new ObjectId)
 
-  /** The unique path associated with the asset */
-  override def toString = {
-    val ownerId = owner.id.getOrElse(throw new NotAllowedException("Resource owner missing ID"))
-    val resId = this.id.get
-    s"/owner/$ownerId/asset/$resId"
-  }
+
+  /** The unique path associated with the asset
+    *
+    * This is safe to call even if the owner and/or asset IDs are missing (they will just be
+    * represented by placeholder strings).
+    */
+  def path = s"/$assetType/${this.id.get}"
+
+  override def toString = path
 }
 
 /**
@@ -71,7 +82,6 @@ class Resource(var name: String, override var owner: User) extends Asset {
   }
 
   override def toString = {
-    val path = super.toString
     s"$name ($path)"
   }
 }

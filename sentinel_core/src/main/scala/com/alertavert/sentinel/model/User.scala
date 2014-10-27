@@ -29,8 +29,6 @@ class User() extends HasId with HasCreator {
   private var _active: Boolean = _
   private var _lastSeen: Date = _
 
-  var perms = mutable.DoubleLinkedList[Permission]()
-
   // A number of "getter" methods to retrieve values for this User
   def firstName = _firstName
   def lastName = _lastName

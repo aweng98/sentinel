@@ -6,13 +6,14 @@ package com.alertavert.sentinel.controllers
 
 import com.alertavert.sentinel.model.{Organization, User}
 import com.alertavert.sentinel.persistence.DataAccessManager
-import com.alertavert.sentinel.persistence.mongodb.{MongoOrganizationDao, MongoUserDao}
+import com.alertavert.sentinel.persistence.mongodb.{UserOrgsAssocDao, MongoOrganizationDao, MongoUserDao}
 import com.alertavert.sentinel.security.Credentials
 import controllers.ApiController
 import models.{UserReads, oidReads, orgReads, orgsWrites}
 import org.bson.types.ObjectId
+import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll}
 import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
-import play.api.libs.json.{JsArray, Json}
+import play.api.libs.json.{JsValue, JsArray, Json}
 import play.api.mvc.{Controller, Results}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -22,12 +23,55 @@ import scala.util.Random
 /**
  * <h1>API Tests
  *
- * <p>White-box API tests that verify that the values returned by the [[controllers .A p i C o n t r o l l e r]]
+ * <p>White-box API tests that verify that the values returned by the [[controllers.ApiController]]
  * match what is expected of them.
  *
  * <p>These are not Integration Tests, as they do not query the API as a black box.
  */
-class ApiControllerSpec extends PlaySpec with Results with OneAppPerSuite {
+class ApiControllerSpec extends PlaySpec with Results with OneAppPerSuite with BeforeAndAfterAll
+    with BeforeAndAfter {
+
+  override def afterAll() {
+    DataAccessManager.db.dropDatabase()
+  }
+
+  before {
+    MongoUserDao().clear()
+    MongoOrganizationDao().clear()
+    UserOrgsAssocDao().collection.drop()
+  }
+
+  /**
+   * Helper method to create a few users that the individual tests can use
+   */
+  def makeUsers(num: Int): Seq[User] = {
+    val dao = MongoUserDao()
+    for (i <- 1 to num) yield {
+      val username = s"user_$i"
+      dao.findByName(username) match {
+        case None => {
+          val user = User.builder(s"User-$i") hasCreds Credentials(username,
+            "zikret") build()
+          dao << user
+          user
+        }
+        case Some(user) => user
+      }
+    }
+  }
+
+  /**
+   * Helper method to create a few orgs that the individual tests can use
+   */
+  def makeOrgs(num: Int): Seq[Organization] = {
+    for (i <- 1 to num) yield {
+      val org = Organization.builder(s"Company#$i").build
+      val orgId = MongoOrganizationDao() << org
+      orgId mustNot be(null)
+      org
+    }
+  }
+
 
   trait WithControllerAndRequest {
     val testController = new Controller with ApiController
@@ -91,7 +135,7 @@ class ApiControllerSpec extends PlaySpec with Results with OneAppPerSuite {
       status(apiResult) mustEqual BAD_REQUEST
     }
 
-    "give me the right user back" in new WithControllerAndRequest {
+    "give caller the right user back" in new WithControllerAndRequest {
       // first create a user in the DB
       val user = User.builder("With", "Jason") hasCreds Credentials("test_9876", "zikret") build
       val id = MongoUserDao() << user
@@ -107,7 +151,7 @@ class ApiControllerSpec extends PlaySpec with Results with OneAppPerSuite {
 
   // --- ORG tests
 
-  "allow me to create a new Org" in new WithControllerAndRequest {
+  "allow caller to create a new Org" in new WithControllerAndRequest {
     val request = fakeRequest("POST").withJsonBody(Json.parse(
       """{"name": "Acme, Inc.", "active": true}"""
     ))
@@ -119,7 +163,7 @@ class ApiControllerSpec extends PlaySpec with Results with OneAppPerSuite {
     MongoOrganizationDao().remove(orgId)
   }
 
-  "allow me to retrieve all Orgs" in new WithControllerAndRequest {
+  "allow caller to retrieve all Orgs" in new WithControllerAndRequest {
     val allOrgs = List(Organization.builder("foo") build,
         Organization.builder("bar") build,
         Organization.builder("quz") build
@@ -137,7 +181,8 @@ class ApiControllerSpec extends PlaySpec with Results with OneAppPerSuite {
     orgsWithIds.foreach(orgsResponse must contain(_))
   }
 
-  "allow me to retrieve a specific Org" in new WithControllerAndRequest {
+  "allow caller to retrieve a specific Org" in new WithControllerAndRequest {
+    makeOrgs(3)
     val org: Organization = MongoOrganizationDao().findAll(limit=1).toList match {
       case Nil => fail("No organizations in DB")
       case head :: xs => head
@@ -149,7 +194,7 @@ class ApiControllerSpec extends PlaySpec with Results with OneAppPerSuite {
     (json \ "id").as[ObjectId] must be (orgId)
   }
 
-  "allow me to activate an Org" in new WithControllerAndRequest {
+  "allow caller to activate an Org" in new WithControllerAndRequest {
     // 1. create a new 'disabled' organization
     val org = Organization.builder("TestAcme, Inc.") build
     val orgId = MongoOrganizationDao() << org
@@ -168,14 +213,14 @@ class ApiControllerSpec extends PlaySpec with Results with OneAppPerSuite {
     newOrg.active must be (true)
   }
 
-  "allow me to modify an Org's name" in new WithControllerAndRequest {
+  "allow caller to modify an Org's name" in new WithControllerAndRequest {
     // 1. create a new organization
-    val org = Organization.builder("EvilCo, Inc.") build
+    val org = Organization.builder("EvilCo, Inc.").build
     val orgId = MongoOrganizationDao() << org
     orgId mustNot be (null)
 
     // 2. get PR to do some magic
-    val polishedOrg = Organization.builder("DoGooders, PLC") withId orgId setActive(true) build
+    val polishedOrg = Organization.builder("DoGooders, PLC") withId orgId setActive true build
 
     // 3. create a request to PUT the modified org
     val request = fakeRequest("PUT", s"/org/$orgId").withJsonBody(Json.toJson(polishedOrg))
@@ -188,4 +233,41 @@ class ApiControllerSpec extends PlaySpec with Results with OneAppPerSuite {
     newOrg.name must be ("DoGooders, PLC")
   }
 
+  // --- USR / ORG tests
+
+  "allow caller to associate a given user with an Org" in new WithControllerAndRequest {
+    // 1. create a new user and a new org
+    val user = makeUsers(1)(0)
+    val org = makeOrgs(1)(0)
+
+    val usrId = user.id.get
+    val orgId = org.id.get
+    val request = fakeRequest("POST", s"/user/$usrId/org/$orgId").withBody(
+      Json.parse("""{"role": "test-user"}"""))
+    val apiResult = call(testController.assocUserOrg(usrId.toString, orgId.toString), request)
+    println(contentAsString(apiResult))
+    status(apiResult) must be (CREATED)
+    val assoc = UserOrgsAssocDao().getByUserid(usrId)
+    assoc.organizations.map(_._1.id) must contain (Some(orgId))
+  }
+
+  "retrieve all associations for user" in new WithControllerAndRequest {
+    val user = makeUsers(1)(0)
+    val orgs = makeOrgs(3)
+    val orgsRoles = orgs.map((_, "user"))
+    UserOrgsAssocDao().associate(user, orgsRoles)
+    val request = fakeRequest("POST", s"/user/${user.id.get}/org")
+    val apiResult = testController.getUsersOrgs(user.id.get.toString).apply(request)
+
+    status(apiResult) mustBe OK
+    val jsonResponse = contentAsJson(apiResult)
+    (jsonResponse \ "organizations").as[List[JsValue]] mustNot be (null)
+    (jsonResponse \ "organizations").as[List[JsValue]] must have length 3
+  }
+
+  "create an arbitrary number of users" in new WithControllerAndRequest {
+    val users = makeUsers(10)
+    val dao = MongoUserDao()
+    users.foreach(u => dao.find(u.id.get) mustNot be (None))
+  }
 }

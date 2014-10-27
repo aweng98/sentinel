@@ -72,3 +72,13 @@ Json.toJson(myDict)
 
 val jsArr = """[{"id": 2, "name": "Joe"}, {"id": 3, "name": "Bob"}]"""
 val jsonRepr = Json.toJson(jsArr)
+
+def activity(day: String) {
+  day match {
+    case "Mon" => print ("work...")
+    case "Fri" => print("Drink!")
+    case _ => print("more work...")
+  }
+}
+
+List("Mon", "Tue", "Fri").foreach { activity }
