@@ -19,6 +19,7 @@ lazy val sentinel = (project in file("."))
 
 scalaVersion := "2.11.1"
 
+
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "2.2.1" % "test",
   "org.scalatestplus" %% "play" % "1.2.0" % "test",

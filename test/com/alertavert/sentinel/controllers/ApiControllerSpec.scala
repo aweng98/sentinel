@@ -36,9 +36,11 @@ class ApiControllerSpec extends PlaySpec with Results with OneAppPerSuite with B
   }
 
   before {
-    MongoUserDao().clear()
-    MongoOrganizationDao().clear()
-    UserOrgsAssocDao().collection.drop()
+    if (DataAccessManager.isReady) {
+      MongoUserDao().clear()
+      MongoOrganizationDao().clear()
+      UserOrgsAssocDao().collection.drop()
+    }
   }
 
   /**
