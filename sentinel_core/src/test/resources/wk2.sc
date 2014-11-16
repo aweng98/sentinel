@@ -15,3 +15,5 @@ pairs
 val foos = List("fofo", "babo", "cuco")
 
 ("" /: foos)(_ + _.toUpperCase)
+
+val x = (2, 3)
