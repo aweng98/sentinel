@@ -11,6 +11,8 @@ scalacOptions ++= Seq("-deprecation", "-feature", "-language:postfixOps")
 
 // Code coverage and support for coveralls.io
 // See: https://github.com/scoverage/sbt-coveralls
+ScoverageKeys.excludedPackages := "controllers\\..*;.*Reverse.*"
+
 scoverage.ScoverageSbtPlugin.instrumentSettings
 
 org.scoverage.coveralls.CoverallsPlugin.coverallsSettings
@@ -24,6 +26,7 @@ lazy val sentinel = (project in file("."))
     .dependsOn(sentinel_core)
 
 scalaVersion := "2.11.1"
+
 
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "2.2.1" % "test",

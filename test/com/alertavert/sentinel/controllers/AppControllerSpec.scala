@@ -3,20 +3,11 @@
 
 package com.alertavert.sentinel.controllers
 
-import com.alertavert.sentinel.persistence.DataAccessManager
 import controllers.AppController
-import org.scalatest.{Suite, BeforeAndAfterAll}
 import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import play.api.mvc.{Controller, Results}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-
-trait EnsureDataMgrClosed extends BeforeAndAfterAll { this: Suite =>
-  override def afterAll(): Unit = {
-    try super.afterAll()
-    finally DataAccessManager.close()
-  }
-}
 
 class AppControllerSpec extends PlaySpec with Results with OneAppPerSuite {
 

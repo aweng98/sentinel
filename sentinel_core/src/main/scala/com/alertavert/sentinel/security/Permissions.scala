@@ -16,6 +16,8 @@ trait Action extends Serializable {
   override def toString = name.capitalize
 
   override def hashCode(): Int = name.hashCode
+
+  override def equals(obj: scala.Any): Boolean = name.equals(obj)
 }
 
 object Action {
@@ -24,6 +26,8 @@ object Action {
   def register(action: Action) {
     actionsMap += action.name -> action
   }
+
+  def valueOf(name: String): Option[Action] = actionsMap.get(name)
 }
 
 class ManageSystem extends Action

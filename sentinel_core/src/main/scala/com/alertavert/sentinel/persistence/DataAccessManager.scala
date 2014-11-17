@@ -3,6 +3,8 @@
 
 package com.alertavert.sentinel.persistence
 
+import java.util.logging.Logger
+
 import com.mongodb.casbah.commons.MongoDBObject
 import com.mongodb.casbah.commons.ValidBSONType.DBObject
 import com.mongodb.casbah.{MongoDB, MongoConnection, MongoURI}
@@ -24,6 +26,8 @@ import com.alertavert.sentinel.errors.DbException
  */
 object DataAccessManager {
 
+  private val log = Logger.getLogger("DataAccessManager")
+
   private var conn: MongoConnection = _
   var db: MongoDB = _
   var closed = false
@@ -43,10 +47,12 @@ object DataAccessManager {
     val mongoUri = MongoURI(dbUri)
     val dbName = mongoUri.database.getOrElse(throw new IllegalArgumentException("MongoDB URI must" +
       " specify a database name (use: mongodb://host[:port]/database"))
+    log.info(s"Connecting to MongoDB on $dbUri")
     conn = MongoConnection(mongoUri)
     db = conn.getDB(dbName)
 
     // Recreate indexes if they were dropped
+    log.info("Creating indexes (if necessary)")
     createIndexes()
 
     // TODO: I'm not sure this is the best place to register the hooks
@@ -62,13 +68,5 @@ object DataAccessManager {
       "ByUsername", true)
 
     // TODO: add indexes for the user/org assoc collection
-  }
-
-  def close() {
-    if (conn != null) {
-      // TODO: log a warning message
-      conn.close()
-    }
-    closed = true
   }
 }
