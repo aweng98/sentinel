@@ -13,3 +13,6 @@ before_install:
 # Looks like the service gets started upon install
 #  - sudo service mongod start
 
+# Running test coverage against scoverage:
+script: "sbt coveralls"
+
