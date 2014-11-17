@@ -1,0 +1,8 @@
+# Travis build, created 2014-1-16
+
+language: scala
+ scala:
+   - "2.11.1"
+ jdk:
+   - oraclejdk8
+
