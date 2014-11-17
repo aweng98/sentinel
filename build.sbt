@@ -9,6 +9,12 @@ organization := "AlertAvert.com"
 
 scalacOptions ++= Seq("-deprecation", "-feature", "-language:postfixOps")
 
+// Code coverage and support for coveralls.io
+// See: https://github.com/scoverage/sbt-coveralls
+scoverage.ScoverageSbtPlugin.instrumentSettings
+
+org.scoverage.coveralls.CoverallsPlugin.coverallsSettings
+
 // The REST project depends on Core Sentinel classes
 lazy val sentinel_core = project
 
