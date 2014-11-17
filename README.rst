@@ -1,9 +1,15 @@
+==========================================
 Sentinel - API-driven User Management SaaS
 ==========================================
+
+.. image:: https://travis-ci.org/massenz/sentinel.svg?branch=develop
+    :target: https://travis-ci.org/massenz/sentinel
 
 :Author: Marco Massenzio (marco@alertavert.com)
 :Version: 0.2
 :Last Updated: 2014-09-28
+
+
 
 
 Goals
