@@ -26,6 +26,10 @@ org.scoverage.coveralls.CoverallsPlugin.coverallsSettings
 
 parallelExecution in ScoverageTest := false
 
+ScoverageKeys.minimumCoverage := 75
+
+ScoverageKeys.failOnMinimumCoverage := true
+
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "2.2.1" % "test",
   "org.mongodb" %% "casbah" % "2.7.3",
