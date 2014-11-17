@@ -18,6 +18,13 @@ initialCommands in console := "import com.alertavert.sentinel._"
 // a clean slate in the db
 parallelExecution in Test := false
 
+// Code coverage and support for coveralls.io
+// See: https://github.com/scoverage/sbt-coveralls
+scoverage.ScoverageSbtPlugin.instrumentSettings
+
+org.scoverage.coveralls.CoverallsPlugin.coverallsSettings
+
+parallelExecution in ScoverageTest := false
 
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "2.2.1" % "test",
