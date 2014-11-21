@@ -1,5 +1,6 @@
 // Copyright (c) 2014 AlertAvert.com.  All rights reserved.
 
+scalaVersion := "2.11.1"
 
 name := "sentinel"
 
@@ -11,9 +12,8 @@ scalacOptions ++= Seq("-deprecation", "-feature", "-language:postfixOps")
 
 // Code coverage and support for coveralls.io
 // See: https://github.com/scoverage/sbt-coveralls
-ScoverageKeys.excludedPackages := "controllers\\..*;.*Reverse.*"
-
-scoverage.ScoverageSbtPlugin.instrumentSettings
+scoverage.ScoverageSbtPlugin.ScoverageKeys.coverageExcludedFiles := 
+        "target/.*"
 
 org.scoverage.coveralls.CoverallsPlugin.coverallsSettings
 
@@ -24,9 +24,6 @@ lazy val sentinel = (project in file("."))
     .enablePlugins(PlayScala)
     .aggregate(sentinel_core)
     .dependsOn(sentinel_core)
-
-scalaVersion := "2.11.1"
-
 
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "2.2.1" % "test",

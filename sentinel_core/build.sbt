@@ -4,9 +4,9 @@ name := "sentinel-core"
 
 version := "0.2"
 
-scalaVersion := "2.11.1"
-
 organization := "AlertAvert.com"
+
+scalaVersion := "2.11.1"
 
 // append -deprecation to the options passed to the Scala compiler
 scalacOptions ++= Seq("-deprecation", "-feature", "-language:postfixOps")
@@ -20,16 +20,16 @@ parallelExecution in Test := false
 
 // Code coverage and support for coveralls.io
 // See: https://github.com/scoverage/sbt-coveralls
-scoverage.ScoverageSbtPlugin.instrumentSettings
 
 org.scoverage.coveralls.CoverallsPlugin.coverallsSettings
 
-parallelExecution in ScoverageTest := false
+//parallelExecution in ScoverageTest := false
 
-ScoverageKeys.minimumCoverage := 75
+scoverage.ScoverageSbtPlugin.ScoverageKeys.coverageMinimum := 75
 
-ScoverageKeys.failOnMinimumCoverage := true
+scoverage.ScoverageSbtPlugin.ScoverageKeys.coverageFailOnMinimum := true
 
+// Dependencies
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "2.2.1" % "test",
   "org.mongodb" %% "casbah" % "2.7.3",
