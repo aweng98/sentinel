@@ -1,5 +1,8 @@
 // Copyright (c) 2014 AlertAvert.com.  All rights reserved.
 
+import CoverallsPlugin.CoverallsKeys._
+import scoverage.ScoverageSbtPlugin.ScoverageKeys._
+
 name := "sentinel-core"
 
 version := "0.2"
@@ -23,11 +26,11 @@ parallelExecution in Test := false
 
 org.scoverage.coveralls.CoverallsPlugin.coverallsSettings
 
-//parallelExecution in ScoverageTest := false
+//coverallsFailBuildOnError := true
 
-scoverage.ScoverageSbtPlugin.ScoverageKeys.coverageMinimum := 75
+coverageMinimum := 75
 
-scoverage.ScoverageSbtPlugin.ScoverageKeys.coverageFailOnMinimum := true
+coverageFailOnMinimum := true
 
 // Dependencies
 libraryDependencies ++= Seq(

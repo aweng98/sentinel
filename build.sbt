@@ -1,5 +1,8 @@
 // Copyright (c) 2014 AlertAvert.com.  All rights reserved.
 
+import CoverallsPlugin.CoverallsKeys._
+import scoverage.ScoverageSbtPlugin.ScoverageKeys._
+
 scalaVersion := "2.11.1"
 
 name := "sentinel"
@@ -12,10 +15,16 @@ scalacOptions ++= Seq("-deprecation", "-feature", "-language:postfixOps")
 
 // Code coverage and support for coveralls.io
 // See: https://github.com/scoverage/sbt-coveralls
-scoverage.ScoverageSbtPlugin.ScoverageKeys.coverageExcludedFiles := 
-        "target/.*"
+coverageExcludedPackages := 
+        "<empty>;controllers\\..*Reverse.*"
+
+//coverallsFailBuildOnError := true
 
 org.scoverage.coveralls.CoverallsPlugin.coverallsSettings
+
+encoding := "ISO-8859-1"
+
+
 
 // The REST project depends on Core Sentinel classes
 lazy val sentinel_core = project

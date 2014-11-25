@@ -26,3 +26,8 @@ tmp
 
 # Local application config override
 conf/override.conf
+
+# Coveralls script - DO NOT UPLOAD
+# Contains private token
+coveralls.sh
+
