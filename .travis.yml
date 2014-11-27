@@ -14,5 +14,8 @@ before_install:
 #  - sudo service mongod start
 
 # Running test coverage against scoverage:
-script: "sbt coverage test coveralls"
+# Disabled because of a bug in sbt-coveralls
+# see: https://github.com/scoverage/sbt-coveralls/issues/28
+#script: "sbt coverage test coveralls"
+script: sbt test
 
