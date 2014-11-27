@@ -20,9 +20,9 @@ coverageExcludedPackages :=
 
 //coverallsFailBuildOnError := true
 
-org.scoverage.coveralls.CoverallsPlugin.coverallsSettings
+//org.scoverage.coveralls.CoverallsPlugin.coverallsSettings
 
-encoding := "ISO-8859-1"
+//encoding := "ISO-8859-1"
 
 
 
