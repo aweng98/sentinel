@@ -24,9 +24,7 @@ parallelExecution in Test := false
 // Code coverage and support for coveralls.io
 // See: https://github.com/scoverage/sbt-coveralls
 
-//org.scoverage.coveralls.CoverallsPlugin.coverallsSettings
-
-//coverallsFailBuildOnError := true
+coverallsFailBuildOnError := true
 
 coverageMinimum := 75
 
