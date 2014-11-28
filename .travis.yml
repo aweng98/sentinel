@@ -17,5 +17,5 @@ before_install:
 # Disabled because of a bug in sbt-coveralls
 # see: https://github.com/scoverage/sbt-coveralls/issues/28
 #script: "sbt coverage test coveralls"
-script: sbt coverage test coverageAggregate coveralls
+script: sbt coverage test coverageAggregate
 
