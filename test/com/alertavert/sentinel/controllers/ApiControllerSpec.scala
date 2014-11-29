@@ -11,7 +11,7 @@ import com.alertavert.sentinel.security.Credentials
 import controllers.ApiController
 import models.{UserReads, oidReads, orgReads, orgsWrites}
 import org.bson.types.ObjectId
-import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll}
+import org.scalatest.{Ignore, BeforeAndAfter, BeforeAndAfterAll}
 import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import play.api.libs.json.{JsValue, JsArray, Json}
 import play.api.mvc.{Controller, Results}
@@ -87,6 +87,7 @@ class ApiControllerSpec extends PlaySpec with Results with OneAppPerSuite with B
 
   "Sentinel API" should {
 
+    // TODO: shouldn't this be part of the AppControllerSpec?
     "be ready and render the index page" in new WithControllerAndRequest {
       DataAccessManager.isReady mustBe true
       DataAccessManager.db.getName mustBe "sentinel-test"
@@ -106,14 +107,11 @@ class ApiControllerSpec extends PlaySpec with Results with OneAppPerSuite with B
     }
 
     "create a new user" in new WithControllerAndRequest {
-      // Avoid conflicts with existing usernames (if run multiple times before the collection
-      // gets wiped out by the next set of DAO tests)
-      val rnd = Random.nextInt(1000)
       val request = fakeRequest("POST", "/user").withJsonBody(Json.parse(
         s"""{"first_name": "Marco",
           |  "last_name": "Mass",
           |  "credentials": {
-          |    "username": "marco_$rnd",
+          |    "username": "marco_999",
           |    "password": "secret"
           |  }
           |}""".stripMargin))
@@ -123,7 +121,7 @@ class ApiControllerSpec extends PlaySpec with Results with OneAppPerSuite with B
       ObjectId.isValid((jsonResult \ "id").as[String]) mustBe true
 
       // now get the real thing from the DB and check it was created with the correct values:
-      val newbie = MongoUserDao().findByName(s"marco_$rnd").get
+      val newbie = MongoUserDao().findByName("marco_999").get
       newbie.id.get.toString mustEqual (jsonResult \ "id").as[String]
       newbie.firstName mustEqual "Marco"
     }
