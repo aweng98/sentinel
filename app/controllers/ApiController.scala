@@ -29,11 +29,6 @@ trait ApiController extends Controller {
       }
     }
 
-    // TODO(marco): this must be replaced with a suitable home page
-    def index = Action {
-      Ok(views.html.index("Sentinel - REST API-driven User Management made easy"))
-    }
-
     def users = Authenticated { implicit request =>
       val resJson = Json.toJson(UsersResource.getAllUsers)
       Ok(resJson)

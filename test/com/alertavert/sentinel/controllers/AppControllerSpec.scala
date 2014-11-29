@@ -3,6 +3,7 @@
 
 package com.alertavert.sentinel.controllers
 
+import com.alertavert.sentinel.persistence.DataAccessManager
 import controllers.AppController
 import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import play.api.mvc.{Controller, Results}
@@ -27,6 +28,13 @@ class AppControllerSpec extends PlaySpec with Results with OneAppPerSuite {
       val jsonResult = contentAsJson(result)
       jsonResult mustNot be (null)
       (jsonResult \ "status").as[String] must be ("running")
+    }
+
+    "be ready and render the index page" in {
+      val testController = new TestController
+      val indexResult = testController.index().apply(FakeRequest())
+      contentAsString(indexResult) must include(
+        "Sentinel - REST API-driven User Management made easy")
     }
   }
 

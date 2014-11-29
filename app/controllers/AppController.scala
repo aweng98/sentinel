@@ -60,7 +60,13 @@ trait AppController   {
       Ok(Json.toJson(stat))
     }
 
-    /**
+    def index = Action {
+      // TODO(marco): this must be replaced with a suitable home page
+      Ok(views.html.index("Sentinel - REST API-driven User Management made easy"))
+    }
+
+
+  /**
      * Application configuration values, abstracted from the configuration file (
      * `/conf/application.conf`).
      *

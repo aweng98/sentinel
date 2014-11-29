@@ -60,6 +60,7 @@ class ApiControllerSpec extends PlaySpec with Results with OneAppPerSuite with B
         case Some(user) => user
       }
     }
+
   }
 
   /**
@@ -87,15 +88,6 @@ class ApiControllerSpec extends PlaySpec with Results with OneAppPerSuite with B
 
   "Sentinel API" should {
 
-    // TODO: shouldn't this be part of the AppControllerSpec?
-    "be ready and render the index page" in new WithControllerAndRequest {
-      DataAccessManager.isReady mustBe true
-      DataAccessManager.db.getName mustBe "sentinel-test"
-      val indexResult = testController.index().apply(fakeRequest())
-      contentAsString(indexResult) must include(
-        "Sentinel - REST API-driven User Management made easy")
-    }
-
     "return all users in DB" in new WithControllerAndRequest {
       val dao = MongoUserDao()
       val users = dao.findAll()
@@ -106,25 +98,7 @@ class ApiControllerSpec extends PlaySpec with Results with OneAppPerSuite with B
       users.foreach(usersResponse must contain(_))
     }
 
-    "create a new user" in new WithControllerAndRequest {
-      val request = fakeRequest("POST", "/user").withJsonBody(Json.parse(
-        s"""{"first_name": "Marco",
-          |  "last_name": "Mass",
-          |  "credentials": {
-          |    "username": "marco_999",
-          |    "password": "secret"
-          |  }
-          |}""".stripMargin))
-      val apiResult = call(testController.createUser, request)
-      status(apiResult) mustEqual CREATED
-      val jsonResult = contentAsJson(apiResult)
-      ObjectId.isValid((jsonResult \ "id").as[String]) mustBe true
 
-      // now get the real thing from the DB and check it was created with the correct values:
-      val newbie = MongoUserDao().findByName("marco_999").get
-      newbie.id.get.toString mustEqual (jsonResult \ "id").as[String]
-      newbie.firstName mustEqual "Marco"
-    }
 
     "fail with an incomplete request" in new WithControllerAndRequest {
       val request = fakeRequest("POST", "/user").withJsonBody(Json.parse(
@@ -263,6 +237,26 @@ class ApiControllerSpec extends PlaySpec with Results with OneAppPerSuite with B
     val jsonResponse = contentAsJson(apiResult)
     (jsonResponse \ "organizations").as[List[JsValue]] mustNot be (null)
     (jsonResponse \ "organizations").as[List[JsValue]] must have length 3
+  }
+
+  "create a new user" in new WithControllerAndRequest {
+    val request = fakeRequest("POST", "/user").withJsonBody(Json.parse(
+      s"""{"first_name": "Marco",
+          |  "last_name": "Mass",
+          |  "credentials": {
+          |    "username": "test-user",
+          |    "password": "secret"
+          |  }
+          |}""".stripMargin))
+    val apiResult = call(testController.createUser, request)
+    status(apiResult) mustEqual CREATED
+    val jsonResult = contentAsJson(apiResult)
+    ObjectId.isValid((jsonResult \ "id").as[String]) mustBe true
+
+    // now get the real thing from the DB and check it was created with the correct values:
+    val newbie = MongoUserDao().findByName("test-user").get
+    newbie.id.get.toString mustEqual (jsonResult \ "id").as[String]
+    newbie.firstName mustEqual "Marco"
   }
 
   "create an arbitrary number of users" in new WithControllerAndRequest {
