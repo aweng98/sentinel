@@ -139,7 +139,7 @@ trait ApiController extends Controller {
       }
   }
 
-  def getAllUsersForOrg(id: String) = play.mvc.Results.TODO
+  def getAllUsersForOrg(id: String) = TODO
 
   /**
    * POST /user/`id`/org/`oid`
@@ -165,7 +165,7 @@ trait ApiController extends Controller {
       }
   }
 
-  def removeAssocUserOrg(uid: String, oid: String) = play.mvc.Results.TODO
+  def removeAssocUserOrg(uid: String, oid: String) = TODO
 
   /**
    * POST /asset
@@ -205,9 +205,7 @@ trait ApiController extends Controller {
     }
   }
 
-  def changeAssetOwner(id: String, uid: String) = Authenticated { implicit request =>
-    BadRequest
-  }
+  def changeAssetOwner(id: String, uid: String) = TODO
 
   def removeAsset(id: String) = Authenticated { implicit request =>
     if (!ObjectId.isValid(id)) BadRequest(s"$id not a valid asset ID")

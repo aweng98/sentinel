@@ -1,15 +1,14 @@
 // Copyright (c) 2014 AlertAvert.com.  All rights reserved.
 
-import CoverallsPlugin.CoverallsKeys._
 import scoverage.ScoverageSbtPlugin.ScoverageKeys._
 
 name := "sentinel-core"
 
-version := "0.2"
+version := "0.3"
 
 organization := "AlertAvert.com"
 
-scalaVersion := "2.11.1"
+scalaVersion := "2.11.4"
 
 // append -deprecation to the options passed to the Scala compiler
 scalacOptions ++= Seq("-deprecation", "-feature", "-language:postfixOps")

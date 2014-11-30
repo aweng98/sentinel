@@ -1,13 +1,12 @@
 // Copyright (c) 2014 AlertAvert.com.  All rights reserved.
 
-import CoverallsPlugin.CoverallsKeys._
 import scoverage.ScoverageSbtPlugin.ScoverageKeys._
 
-scalaVersion := "2.11.1"
+scalaVersion := "2.11.4"
 
 name := "sentinel"
 
-version := "0.2-SNAPSHOT"
+version := "0.3-SNAPSHOT"
 
 organization := "AlertAvert.com"
 
