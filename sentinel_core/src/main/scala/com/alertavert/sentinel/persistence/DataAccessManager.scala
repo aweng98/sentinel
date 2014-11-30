@@ -55,7 +55,7 @@ object DataAccessManager {
     log.info("Creating indexes (if necessary)")
     createIndexes()
 
-    // TODO: I'm not sure this is the best place to register the hooks
+    // FIXME: I'm not sure this is the best place to register the hooks
     ActionSerializer register()
   }
 
@@ -68,5 +68,6 @@ object DataAccessManager {
       "ByUsername", true)
 
     // TODO: add indexes for the user/org assoc collection
+    // TODO: add indexes for the resources collection
   }
 }

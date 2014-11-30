@@ -2,38 +2,53 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-# Home page
-GET           /                          controllers.AppController.index
-
 # Map static resources from the /public folder to the /assets URL path
-GET           /assets/*file              controllers.Assets.at(path="/public", file)
+GET           /assets/*file               controllers.Assets.at(path="/public", file)
 
 # User login - returns the API Key
-POST          /login                     controllers.ApiController.login
+POST          /login                      controllers.ApiController.login
 
 #
 #### REST API
 #
 # Users:
-GET           /user                      controllers.ApiController.users
-GET           /user/:id                  controllers.ApiController.userById(id)
-POST          /user                      controllers.ApiController.createUser
-PUT           /user/:id                  controllers.ApiController.modifyUser(id)
+GET           /user                       controllers.ApiController.users
+GET           /user/:id                   controllers.ApiController.userById(id)
+POST          /user                       controllers.ApiController.createUser
+PUT           /user/:id                   controllers.ApiController.modifyUser(id)
 
 # Organizations
-GET           /org                       controllers.ApiController.orgs
-GET           /org/:id                   controllers.ApiController.orgById(id)
-POST          /org                       controllers.ApiController.createOrg
-PUT           /org/:id                   controllers.ApiController.modifyOrg(id)
+GET           /org                        controllers.ApiController.orgs
+GET           /org/:id                    controllers.ApiController.orgById(id)
+POST          /org                        controllers.ApiController.createOrg
+PUT           /org/:id                    controllers.ApiController.modifyOrg(id)
 
 # Users - Orgs
-GET           /user/:id/org              controllers.ApiController.getUsersOrgs(id)
-GET           /org/:id/user              controllers.ApiController.getAllUsersForOrg(id)
-POST          /user/:uid/org/:oid        controllers.ApiController.assocUserOrg(uid, oid)
-DELETE        /user/:uid/org/:oid        controllers.ApiController.removeAssocUserOrg(uid, oid)
+#
+# Gets all organizations a User is associated with
+GET           /user/:id/org               controllers.ApiController.getUsersOrgs(id)
+#
+# Looks up all users that are associated with the given Organization
+GET           /org/:id/user               controllers.ApiController.getAllUsersForOrg(id)
+#
+# Creates a new association between a User and an Organization
+POST          /user/:uid/org/:oid         controllers.ApiController.assocUserOrg(uid, oid)
+#
+# Removes the association (both the User and the Org are left otherwise untouched)
+DELETE        /user/:uid/org/:oid         controllers.ApiController.removeAssocUserOrg(uid, oid)
 
+# Assets and Resources
+#
+# Assets can be used as basic building blocks, where only the UID matters
+#
+POST          /asset                      controllers.ApiController.createAsset
+GET           /asset/:id                  controllers.ApiController.assetById(id)
+PUT           /asset/:id                  controllers.ApiController.updateAsset(id)
+PUT           /asset/:id/user/:uid        controllers.ApiController.changeAssetOwner(id, uid)
+DELETE        /asset/:id                  controllers.ApiController.removeAsset(id)
 #
 # Application status and configuration
 #
-GET           /health                    controllers.AppController.health
-GET           /status                    controllers.AppController.status
+GET           /                           controllers.AppController.index
+GET           /health                     controllers.AppController.health
+GET           /status                     controllers.AppController.status

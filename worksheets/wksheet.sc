@@ -72,7 +72,6 @@ Json.toJson(myDict)
 
 val jsArr = """[{"id": 2, "name": "Joe"}, {"id": 3, "name": "Bob"}]"""
 val jsonRepr = Json.toJson(jsArr)
-
 def activity(day: String) {
   day match {
     case "Mon" => print ("work...")
@@ -82,3 +81,7 @@ def activity(day: String) {
 }
 
 List("Mon", "Tue", "Fri").foreach { activity }
+
+val dud = None
+
+dud.map(x => s"$x is now").filter(_ startsWith "foo").map(_.toUpperCase)

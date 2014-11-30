@@ -4,7 +4,7 @@
 package com.alertavert.sentinel.persistence.mongodb
 
 import com.alertavert.sentinel.UnitSpec
-import com.alertavert.sentinel.model.{Resource, User}
+import com.alertavert.sentinel.model.{FlexibleResource, Resource, User}
 import com.alertavert.sentinel.persistence.DAO
 import com.alertavert.sentinel.security.{Credentials, Edit, View}
 import org.bson.types.ObjectId
@@ -49,21 +49,33 @@ class ResourceDaoTest extends UnitSpec with BeforeAndAfter {
   }
 
   it can "have its owner changed" in new ASimpleResource {
-    // let's first test that the default owner == creator holds:
+    // GIVEN that the default owner == creator holds:
     val resId = resourceDao << res
 
-    // not let's retrieve it from the DB ...
+    // THEN let's retrieve it from the DB
     val foundRes = resourceDao.find(resId) getOrElse fail("Cannot retrieve the resource just saved")
     assert(foundRes === res)
     val newOwner = User.builder("Bob", "Builder") hasCreds creds build()
-    // ... assign a new owner and save
+    // AND assign a new owner and save
     foundRes.owner = newOwner
     val sameId = resourceDao << foundRes
     assert(sameId === resId)
 
-    // finally, let's get it back (again) and check the owner
+    // ASSERT that we can get it back (again) and check the owner
     val sameRes = resourceDao.find(sameId) getOrElse fail("Cannot find after changing owner")
     sameRes should be (foundRes)
     sameRes.owner should be (newOwner)
+  }
+
+  it can "be of any type the user wants" in new CreatedByOrdinaryUser {
+    val gameSprite = new FlexibleResource("gork", creator, "game/sprites")
+    val resId = resourceDao << gameSprite
+    resId shouldNot be (null)
+
+    val res = resourceDao.findByName("gork")
+    res shouldNot be(None)
+    val sprite = res.get
+    sprite.id.get shouldEqual resId
+    sprite shouldEqual gameSprite
   }
 }

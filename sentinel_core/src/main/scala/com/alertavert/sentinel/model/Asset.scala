@@ -43,12 +43,16 @@ trait Asset extends HasId with HasCreator {
   setId(new ObjectId)
 
 
-  /** The unique path associated with the asset
-    *
-    * This is safe to call even if the owner and/or asset IDs are missing (they will just be
-    * represented by placeholder strings).
-    */
-  def path = s"/$assetType/${this.id.get}"
+  /**
+   * The unique path associated with the asset
+   *
+   * <p>This is safe to call even if the owner and/or asset IDs are missing (they will just be
+   * represented by placeholder strings).
+   *
+   * <p>This method is `sealed` because it's a fundamental functionality of an asset class and
+   * should never be overridden by subclasses
+   */
+  final def path = s"/$assetType/${this.id.get}"
 
   override def toString = path
 }
@@ -84,4 +88,10 @@ class Resource(var name: String, override var owner: User) extends Asset {
   override def toString = {
     s"$name ($path)"
   }
+}
+
+class FlexibleResource(name: String,
+                       owner: User,
+                       override val assetType: String) extends Resource(name, owner) {
+
 }

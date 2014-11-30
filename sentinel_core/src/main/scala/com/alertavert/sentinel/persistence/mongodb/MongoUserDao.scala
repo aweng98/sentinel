@@ -3,16 +3,16 @@
 
 package com.alertavert.sentinel.persistence.mongodb
 
-import com.alertavert.sentinel.errors.NotAllowedException
-import com.mongodb.casbah.commons.TypeImports._
+import java.util.Date
 
-import language.postfixOps
+import com.alertavert.sentinel.errors.{DbException, NotAllowedException}
 import com.alertavert.sentinel.model.User
+import com.alertavert.sentinel.persistence.DataAccessManager
+import com.alertavert.sentinel.security.{Action, Credentials, Permission}
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.MongoCollection
-import java.util.Date
-import com.alertavert.sentinel.security.{Action, Permission, Credentials}
-import com.alertavert.sentinel.persistence.DataAccessManager
+
+import scala.language.postfixOps
 
 class CredentialsSerializer extends MongoSerializer[Credentials] {
 
@@ -99,7 +99,7 @@ object MongoUserDao {
         instance = new MongoUserDao(DataAccessManager.db(USER_COLLECTION))
           with IdSerializer[User] with CreatorSerializer[User]
       } else {
-        throw new IllegalStateException("DataAccessManager not initialized")
+        throw new DbException("DataAccessManager not initialized")
       }
       instance
     case _ => instance

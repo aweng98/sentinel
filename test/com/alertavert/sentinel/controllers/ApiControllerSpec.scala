@@ -28,12 +28,7 @@ import scala.util.Random
  *
  * <p>These are not Integration Tests, as they do not query the API as a black box.
  */
-class ApiControllerSpec extends PlaySpec with Results with OneAppPerSuite with BeforeAndAfterAll
-    with BeforeAndAfter {
-
-  override def afterAll() {
-    DataAccessManager.db.dropDatabase()
-  }
+class ApiControllerSpec extends ControllerSpec {
 
   before {
     if (DataAccessManager.isReady) {
@@ -41,49 +36,6 @@ class ApiControllerSpec extends PlaySpec with Results with OneAppPerSuite with B
       MongoOrganizationDao().clear()
       UserOrgsAssocDao().collection.drop()
     }
-  }
-
-  /**
-   * Helper method to create a few users that the individual tests can use
-   */
-  def makeUsers(num: Int): Seq[User] = {
-    val dao = MongoUserDao()
-    for (i <- 1 to num) yield {
-      val username = s"user_$i"
-      dao.findByName(username) match {
-        case None => {
-          val user = User.builder(s"User-$i") hasCreds Credentials(username,
-            "zikret") build()
-          dao << user
-          user
-        }
-        case Some(user) => user
-      }
-    }
-
-  }
-
-  /**
-   * Helper method to create a few orgs that the individual tests can use
-   */
-  def makeOrgs(num: Int): Seq[Organization] = {
-    for (i <- 1 to num) yield {
-      val org = Organization.builder(s"Company#$i").build
-      val orgId = MongoOrganizationDao() << org
-      orgId mustNot be(null)
-      org
-    }
-  }
-
-
-  trait WithControllerAndRequest {
-    val testController = new Controller with ApiController
-
-    def fakeRequest(method: String = "GET", route: String = "/") = FakeRequest(method, route)
-      .withHeaders(
-        ("Date", "2014-10-05T22:00:00"),
-        ("Authorization", "username=bob;hash=foobar==")
-    )
   }
 
   "Sentinel API" should {
@@ -97,8 +49,6 @@ class ApiControllerSpec extends PlaySpec with Results with OneAppPerSuite with B
       val usersResponse = usersArray.value.map(v => v.as[User])
       users.foreach(usersResponse must contain(_))
     }
-
-
 
     "fail with an incomplete request" in new WithControllerAndRequest {
       val request = fakeRequest("POST", "/user").withJsonBody(Json.parse(
@@ -116,6 +66,7 @@ class ApiControllerSpec extends PlaySpec with Results with OneAppPerSuite with B
       val request = fakeRequest(route = s"/user/$id")
       val apiResult = call(testController.userById(id.toString), request)
       status(apiResult) mustEqual OK
+      // TODO: use the implicit conversion JSON -> User here (UserReads?)
       val jsonBody = contentAsJson(apiResult)
       (jsonBody \ "first_name").as[String] mustEqual "With"
       (jsonBody \ "credentials" \ "username").as[String] mustEqual "test_9876"

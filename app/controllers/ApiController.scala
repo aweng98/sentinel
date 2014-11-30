@@ -3,7 +3,7 @@
 
 package controllers
 
-import com.alertavert.sentinel.errors.{NotFoundException, AuthenticationError, DbException}
+import com.alertavert.sentinel.errors.{NotAllowedException, NotFoundException, AuthenticationError, DbException}
 import com.alertavert.sentinel.persistence.DataAccessManager
 import models._
 import models.resources._
@@ -36,13 +36,8 @@ trait ApiController extends Controller {
 
     def userById(id: String) = Authenticated { implicit request =>
       if (!ObjectId.isValid(id)) BadRequest(s"$id not a valid user ID")
-      else {
-        UsersResource.getUserById(new ObjectId(id)) match {
-          // TODO: discover why raising here bypasses Global.onError()
-          case None => NotFound(s"Could not retrieve user $id")
-          case Some(user) => Ok(Json.toJson(user))
-        }
-      }
+      else UsersResource.getUserById(new ObjectId(id)).map(
+              u => Ok(Json.toJson(u))).getOrElse(NotFound(s"Could not retrieve user $id"))
     }
 
     def login = Action(BodyParsers.parse.json) {
@@ -171,6 +166,55 @@ trait ApiController extends Controller {
   }
 
   def removeAssocUserOrg(uid: String, oid: String) = play.mvc.Results.TODO
+
+  /**
+   * POST /asset
+   * <pre>
+   *    {
+   *      "name": "an optional string"
+   *    }
+   * </pre>
+   * @return
+   */
+  def createAsset() = Authenticated(BodyParsers.parse.json) {
+    implicit request =>
+      try {
+        val asset = AssetsResource.create(request.body, request.user)
+        Created(Json.toJson(asset)).withHeaders(("Location", asset.path))
+      } catch {
+        case ex: NotFoundException => Forbidden(ex.message)
+        case ex: NotAllowedException => BadRequest(ex.message)
+      }
+  }
+
+
+  def assetById(id: String) = Authenticated {
+    implicit request =>
+      if (!ObjectId.isValid(id)) BadRequest(s"$id not a valid asset ID")
+      else AssetsResource.getAssetById(new ObjectId(id)).map(
+        u => Ok(Json.toJson(u))).getOrElse(NotFound(s"Could not retrieve asset $id"))
+  }
+
+  def updateAsset(id: String) = Authenticated(BodyParsers.parse.json) { implicit request =>
+    if (!ObjectId.isValid(id)) BadRequest(s"$id not a valid asset ID")
+    else {
+      if (AssetsResource.update(new ObjectId(id), request.body)) {
+        NoContent.withHeaders("Location" -> s"/asset/$id")
+      }
+      else NotFound
+    }
+  }
+
+  def changeAssetOwner(id: String, uid: String) = Authenticated { implicit request =>
+    BadRequest
+  }
+
+  def removeAsset(id: String) = Authenticated { implicit request =>
+    if (!ObjectId.isValid(id)) BadRequest(s"$id not a valid asset ID")
+    if (AssetsResource.remove(new ObjectId(id))) NoContent
+    else NotFound(s"Could not delete asset $id, it may not exist in the database")
+  }
 }
 
-object ApiController extends Controller with ApiController
+object ApiController extends Controller with ApiController {
+}

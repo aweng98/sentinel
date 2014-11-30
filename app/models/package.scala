@@ -13,7 +13,7 @@ import scala.concurrent.Future
 import play.api.libs.json._
 import play.api.mvc._
 
-import com.alertavert.sentinel.model.{Organization, User}
+import com.alertavert.sentinel.model.{Resource, Organization, User}
 import com.alertavert.sentinel.security.Credentials
 import com.alertavert.sentinel.security.{encode, hashStrings}
 
@@ -24,6 +24,8 @@ import com.alertavert.sentinel.security.{encode, hashStrings}
  */
 package object models {
 
+  val format = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss zzz")
+
   implicit val credsWrites = new Writes[Credentials] {
     def writes(creds: Credentials) = Json.obj(
       "username" -> creds.username,
@@ -32,21 +34,16 @@ package object models {
   }
 
   implicit val userWrites = new Writes[User] {
-    val format = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss zzz")
 
     def writes(user: User) = Json.obj(
-        "id" -> user.id.getOrElse(throw new IllegalStateException("User " +
-          user.getCredentials.username + " has no valid ID")).toString,
+        "id" -> user.id.map(_ toString),
         "first_name" -> user.firstName,
         "last_name" -> user.lastName,
         "active" -> user.isActive,
         "last_seen" -> format.format(user.lastSeen),
         "credentials" -> Json.toJson(user.getCredentials),
         "created_when" -> format.format(user.createdAt),
-        "created_by" -> (user.createdBy match {
-          case None => ""
-          case Some(usr) => usr.id.toString
-        })
+        "created_by" -> user.createdBy.map(_.id.map(_ toString))
       )
   }
 
@@ -61,6 +58,8 @@ package object models {
       val uname = (json \ "credentials" \ "username").as[String]
       val pwd = (json \ "credentials" \ "password").asOpt[String].getOrElse("")
       val active = (json \ "active").asOpt[Boolean].getOrElse(false)
+
+      // TODO: missing created_by and created_at fields
 
       val builder = (User.builder(fname, lname) withId id hasCreds Credentials(uname, pwd)
         setActive active)
@@ -81,8 +80,7 @@ package object models {
 
   implicit val orgsWrites = new Writes[Organization] {
     def writes(org: Organization) = Json.obj(
-      "id" -> org.id.getOrElse(throw new IllegalArgumentException(
-        s"Organization $org has no valid ID")).toString,
+      "id" -> org.id.map(_ toString),
       "name" -> org.name,
       "active" -> org.active
     )
@@ -106,6 +104,36 @@ package object models {
         throw new IllegalArgumentException("Missing Org " + "ID")).toString,
       "role" -> orgRole._2
     )
+  }
+
+  implicit val resourceWrites = new Writes[Resource] {
+    def writes(resource: Resource) = Json.obj(
+      "id" -> resource.id.map(_ toString),
+      "name" -> resource.name,
+      "path" -> resource.path,
+      "owner" -> resource.owner.id.map(_ toString),
+
+      // TODO: created_by, created_when must be handled by a unified super-trait
+      "created_by" -> resource.createdBy.map(_.id.map(_ toString)),
+      "created_when" -> format.format(resource.createdAt)
+    )
+  }
+
+  implicit val resourceReads = new Reads[Resource] {
+    def reads(json: JsValue) = {
+      val id = (json \ "id").as[ObjectId]
+      val name = (json \ "name").as[String]
+      val ownerId = (json \ "owner").as[ObjectId]
+      // This is just a placeholder for the ID - the retrieval from the persistence layer cannot be
+      // done here
+      val owner = (User.builder("") withId ownerId hasCreds Credentials.createCredentials("", "")
+        build())
+
+      // TODO: created_by, created_when must be handled by a unified super-trait
+      val res = new Resource(name, owner)
+      res.setId(id)
+      JsSuccess(res)
+    }
   }
 }
 
@@ -147,15 +175,16 @@ package object security {
       throw new AuthenticationError("Missing `Authorization:` header"))
     val values = parseAuthHeader(auth)
 
-    // Retrieve the user, as we need it anyway, even if validation is disabled
+    // Retrieve the username, as we need it anyway, even if validation is disabled
     val username = values.getOrElse("username",
       throw new AuthenticationError("`username` key missing in Authorization header"))
 
+    val maybeUser = UsersResource.getUserByUsername(username)
     if (AppController.configuration.shouldValidate) {
       val hash = values.getOrElse("hash",
-        throw new AuthenticationError("`hash` key missing in Authorization header"))
-      val user = UsersResource.getUserByUsername(username).getOrElse(
-        throw new AuthenticationError(s"$username is not a recognized username"))
+          throw new AuthenticationError("`hash` key missing in Authorization header"))
+      val user = maybeUser.getOrElse(
+          throw new AuthenticationError(s"$username is not a valid username"))
       val apiKey = user.getCredentials.apiKey
 
       val computedHash = encode(hashStrings(List(
@@ -168,7 +197,7 @@ package object security {
       if (computedHash == hash) Some(user) else None
     } else {
       logger.warn("Bypassing API signature check")
-      Some(madeUpUser(username))
+      Some(maybeUser.getOrElse(madeUpUser(username)))
     }
   }
 
@@ -179,7 +208,7 @@ package object security {
    * @param username the newly created bogus user will have this username
    */
   private def madeUpUser(username: String) = {
-    User.builder(username) hasCreds(username, "abcdef123456", 123456) withId new ObjectId build()
+    User.builder(username) hasCreds Credentials(username, "secret") withId new ObjectId build()
   }
 
   private def parseAuthHeader(authHeader: String) = {

@@ -19,7 +19,11 @@ class MongoResourceDao(override val collection: MongoCollection) extends
         resource.owner.id
       }),
       "allowed_actions" -> resource.allowedActions,
-      "name" -> resource.name
+      "name" -> resource.name,
+      "asset_type" -> resource.assetType,
+      // the path is serialized as a read-only value, it won't be deserialized as it can be
+      // reconstructed from the asset_type and the ID
+      "path" -> resource.path
     )
   }
 
@@ -52,7 +56,7 @@ object MongoResourceDao {
       instance = new MongoResourceDao(DataAccessManager.db(RESOURCE_COLLECTION))
           with IdSerializer[Resource] with CreatorSerializer[Resource]
       } else {
-        throw  new DbException("DataAccessManager not initialized; use DataAccessManager.init()")
+        throw new DbException("DataAccessManager not initialized; use DataAccessManager.init()")
       }
       instance
     case _ => instance
