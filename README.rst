@@ -7,6 +7,9 @@ Sentinel - API-driven User Management SaaS
 
 .. image:: https://coveralls.io/repos/massenz/sentinel/badge.png?branch=develop
   :target: https://coveralls.io/r/massenz/sentinel?branch=develop
+
+.. image:: https://go-shields.herokuapp.com/license-apache2-blue.png
+
   
 :Author: Marco Massenzio (marco@alertavert.com)
 :Version: 0.2

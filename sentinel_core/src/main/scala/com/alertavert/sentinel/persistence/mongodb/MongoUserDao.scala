@@ -43,7 +43,7 @@ class PermissionSerializer extends MongoSerializer[Permission] {
 
 
 class MongoUserDao(override val collection: MongoCollection) extends MongoDao[User](collection)
-  with MongoSerializer[User] {
+with MongoSerializer[User] {
 
   val credsSerializer = new CredentialsSerializer
 
@@ -91,17 +91,15 @@ class MongoUserDao(override val collection: MongoCollection) extends MongoDao[Us
 
 object MongoUserDao {
   val USER_COLLECTION = "users"
-  private var instance: MongoUserDao = _
+  private var instance: Option[MongoUserDao] = None
 
   def apply(): MongoUserDao = instance match {
-    case null =>
+    case None =>
       if (DataAccessManager isReady) {
-        instance = new MongoUserDao(DataAccessManager.db(USER_COLLECTION))
-          with IdSerializer[User] with CreatorSerializer[User]
-      } else {
-        throw new DbException("DataAccessManager not initialized")
+        instance = Some(new MongoUserDao(DataAccessManager.db(USER_COLLECTION))
+          with IdSerializer[User] with CreatorSerializer[User])
       }
-      instance
-    case _ => instance
+      instance.getOrElse(throw new DbException("DataAccessManager not initialized"))
+    case Some(x) => instance.get
   }
 }

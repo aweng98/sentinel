@@ -3,6 +3,8 @@
 
 package com.alertavert.sentinel.persistence.mongodb
 
+import com.alertavert.sentinel.errors.DbException
+
 import language.postfixOps
 import com.alertavert.sentinel.model.Organization
 import com.mongodb.casbah.Imports._
@@ -32,14 +34,14 @@ class MongoOrganizationDao(override val collection: MongoCollection) extends
 
 object MongoOrganizationDao {
   private val ORGS_COLLECTION = "organizations"
-  private var instance: MongoOrganizationDao = _
+  private var instance: Option[MongoOrganizationDao] = None
 
   def apply(): MongoOrganizationDao = instance match {
-    case null => if (DataAccessManager isReady) {
-          instance = new MongoOrganizationDao(DataAccessManager.db(ORGS_COLLECTION))
-            with IdSerializer[Organization] with CreatorSerializer[Organization]
+      case None => if (DataAccessManager isReady) {
+          instance = Some(new MongoOrganizationDao(DataAccessManager.db(ORGS_COLLECTION))
+              with IdSerializer[Organization] with CreatorSerializer[Organization])
         }
-        instance
-    case _ => instance
-  }
+        instance.getOrElse(throw new DbException("DataAccessManager not initialized"))
+      case Some(x) => instance.get
+    }
 }
