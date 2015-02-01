@@ -30,11 +30,18 @@ class AppControllerSpec extends PlaySpec with Results with OneAppPerSuite {
       (jsonResult \ "status").as[String] must be ("running")
     }
 
-    "be ready and render the index page" in {
+    "be ready and render the UI page" in {
       val testController = new TestController
-      val indexResult = testController.index().apply(FakeRequest())
+      val indexResult = testController.mainUi().apply(FakeRequest())
       contentAsString(indexResult) must include(
-        "Sentinel - REST API-driven User Management made easy")
+        "ng-app=\"sentinelApp\"")
+    }
+
+    "the user must NOT be logged in at start" in {
+      val testController = new TestController
+      val indexResult = testController.mainUi().apply(FakeRequest())
+      contentAsString(indexResult) must include(
+        "login-form")
     }
   }
 
