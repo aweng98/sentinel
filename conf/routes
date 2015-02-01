@@ -49,6 +49,8 @@ DELETE        /asset/:id                  controllers.ApiController.removeAsset(
 #
 # Application status and configuration
 #
-GET           /                           controllers.AppController.index
 GET           /health                     controllers.AppController.health
 GET           /status                     controllers.AppController.status
+
+# initial UI testing AngularJS:
+GET           /                           controllers.AppController.mainUi

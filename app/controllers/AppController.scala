@@ -9,6 +9,7 @@ import play.Play
 import play.api._
 import play.api.libs.json.Json
 import play.api.mvc._
+import play.twirl.api.Html
 
 import scala.collection.mutable
 
@@ -60,9 +61,13 @@ trait AppController   {
       Ok(Json.toJson(stat))
     }
 
-    def index = Action {
-      // TODO(marco): this must be replaced with a suitable home page
-      Ok(views.html.index("Sentinel - REST API-driven User Management made easy"))
+  /**
+   * Launches the main UI to interact with the Sentinel UI
+   *
+   * @return
+   */
+    def mainUi = Action {
+      Ok(views.html.main("Sentinel UI"))
     }
 
 

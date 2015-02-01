@@ -1,4 +1,4 @@
-@(title: String)(content: Html)
+@(title: String)
 
 <!DOCTYPE html>
 
@@ -7,14 +7,33 @@
   ~ Commercial use or modification of this software without a valid license is expressly forbidden
   -->
 
-<html>
+<html ng-app="sentinelApp">
     <head>
         <title>@title</title>
         <link rel="stylesheet" media="screen" href='@routes.Assets.at("stylesheets/main.css")'>
         <link rel="shortcut icon" type="image/png" href='@routes.Assets.at("images/favicon.png")'>
-        <script src='@routes.Assets.at("javascripts/hello.js")' type="text/javascript"></script>
     </head>
-    <body>
-        @content
+    <body ng-controller="SentinelCtrl as ctrl">
+        <div ng-class='ctrl.msgClass'> {{ ctrl.message }} </div>
+        <div class="apiKey">
+            API Key: <span ng-bind="ctrl.apiKey"></span>
+            <span class="logout">
+                <a ng-show="ctrl.authenticated()"
+                   ng-click="ctrl.logout()" href="#">Logout</a>
+            </span>
+        </div>
+
+        <div class="login-form" ng-hide="ctrl.authenticated()">
+            <label for="username" class="label">Username:</label><br />
+            <input id="username" type="text" ng-model="ctrl.username"/><br />
+            <label for="password" class="label">Password:</label><br />
+            <input id="password" type="text" ng-model="ctrl.password"/><br />
+            <button ng-click="ctrl.login()" class="button">Login</button>
+        </div>
+
     </body>
+
+    <!-- Loading the main AngularJS library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.19/angular.js"></script>
+    <script src='@routes.Assets.at("scripts/ntApp.js")' type="text/javascript"></script>
 </html>

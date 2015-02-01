@@ -1,0 +1,38 @@
+
+body {
+    font-family: "Trebuchet MS", Verdana, Geneva, Arial, Helvetica, sans-serif;
+}
+.normal {
+    color: whitesmoke;
+    background-color: green;
+}
+
+button {
+    margin: 20px;
+}
+
+.apiKey {
+    background-color: ivory;
+    text-align: right;
+    color: dodgerblue;
+    font-size: 0.50em;
+}
+
+.label {
+    margin-top: 25px;
+    margin-left: 1px;
+    color: dodgerblue;
+    font-size: 0.75em;
+}
+
+.login-form {
+    margin: 15px;
+    border: dashed 1px gray;
+    padding: 10px;
+    width: 20%;
+}
+
+.logout {
+    margin-left: 10px;
+    text-decoration: none;
+}
