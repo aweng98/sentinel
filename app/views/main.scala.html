@@ -23,13 +23,13 @@
             </span>
         </div>
 
-        <div class="login-form" ng-hide="ctrl.authenticated()">
+        <form class="login-form" ng-hide="ctrl.authenticated()" ng-submit="ctrl.login()">
             <label for="username" class="label">Username:</label><br />
-            <input id="username" type="text" ng-model="ctrl.username"/><br />
+            <input id="username" type="text" ng-model="ctrl.user.username"/><br />
             <label for="password" class="label">Password:</label><br />
-            <input id="password" type="text" ng-model="ctrl.password"/><br />
-            <button ng-click="ctrl.login()" class="button">Login</button>
-        </div>
+            <input id="password" type="password" ng-model="ctrl.user.password"/><br />
+            <input type="submit" value="Login" class="submit-button">
+        </form>
 
     </body>
 

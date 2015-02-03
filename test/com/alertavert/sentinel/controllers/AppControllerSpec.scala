@@ -10,6 +10,10 @@ import play.api.mvc.{Controller, Results}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
+/**
+ * Minimalist set of tests against the app correctly serving the UI.
+ * Javascript UI is tested separately using Karma/Jasmine frameworks.
+ */
 class AppControllerSpec extends PlaySpec with Results with OneAppPerSuite {
 
   class TestController() extends Controller with AppController

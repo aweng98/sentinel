@@ -11,13 +11,13 @@ angular.module('sentinelApp', [])
         self.msgClass = 'normal';
         self.apiKey = null;
 
-        self.username = '';
-        self.password = '';
-
         self.login = function () {
+            console.log("Logging " + self.user.username);
             // TODO: use $get to execute an AJAX call to auth user
-            if (self.password === 'pass') {
+            if (self.user.password === 'pass') {
                 self.apiKey = '1234';
+                console.log("User " + self.user.username + " logged in," +
+                            "with API Key: " + self.apiKey);
             }
         };
 
@@ -26,6 +26,7 @@ angular.module('sentinelApp', [])
         };
 
         self.logout = function() {
+            self.user = null;
             self.apiKey = null;
         }
     }]);

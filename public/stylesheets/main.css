@@ -7,8 +7,11 @@ body {
     background-color: green;
 }
 
-button {
-    margin: 20px;
+.submit-button {
+    float: right;
+    margin-top: 15px;
+    margin-right: 10px;
+    margin-bottom: 5px;
 }
 
 .apiKey {
@@ -26,6 +29,7 @@ button {
 }
 
 .login-form {
+    overflow: auto;
     margin: 15px;
     border: dashed 1px gray;
     padding: 10px;
