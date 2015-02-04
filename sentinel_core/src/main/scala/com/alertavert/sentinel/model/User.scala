@@ -39,6 +39,15 @@ class User() extends HasId with HasCreator {
 
   def checkCredentials(that: Credentials) = _credentials == that
 
+  /**
+   * Authenticates user against plaintext password
+   *
+   * @param username
+   * @param password the plaintext password for the user (we will use the `salt` stored in this User object to
+   *                 hash the password and compare with the stored credentials
+   * @return `true` if the credentials match
+   * @see User#checkCredentials
+   */
   def authenticate(username: String, password: String) = checkCredentials(new Credentials(username,
                                      Credentials.hashPwd(password, _credentials.salt),
                                      _credentials.salt))

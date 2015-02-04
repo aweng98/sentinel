@@ -45,6 +45,7 @@ trait ApiController extends Controller {
         val req = request.body
         val username = req \ "username"
         val password = req \ "password"
+        Logger.debug(s"Authenticating $username with password")
         val user = UsersResource.authUser(username.as[String], password.as[String])
         Ok(Json.toJson(user))
     }

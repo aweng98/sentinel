@@ -26,7 +26,7 @@ import com.alertavert.sentinel.errors.DbException
  */
 object DataAccessManager {
 
-  private val log = Logger.getLogger("DataAccessManager")
+  private val log = Logger.getLogger(DataAccessManager.getClass.getName)
 
   private var conn: MongoConnection = _
   var db: MongoDB = _
