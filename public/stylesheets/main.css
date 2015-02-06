@@ -4,7 +4,7 @@ body {
 }
 .normal {
     color: whitesmoke;
-    background-color: green;
+    background-color: dodgerblue;
 }
 
 .submit-button {
@@ -39,4 +39,12 @@ body {
 .logout {
     margin-left: 10px;
     text-decoration: none;
+}
+
+.err-msg {
+    border: solid 1px red;
+    background-color: silver;
+    font-size: 0.6em;
+    color: #BB2020;
+    padding: 0.2em 15px;
 }

@@ -17,15 +17,16 @@ import security.Authenticated
 trait ApiController extends Controller {
   this: Controller =>
 
-    Logger.info("{} Controller started", this.getClass.getSimpleName)
-
-    if (!DataAccessManager.isReady) {
-      DataAccessManager.init(AppController.configuration.dbUri)
-      if (! DataAccessManager.isReady) {
-        Logger.error("Could not start the Data Access Manager, it is possible that the DB server" +
-          " may be down")
-        throw new DbException("Could not connect to the DB server (" +
-          AppController.configuration.dbUri + ")")
+    def initialize() {
+      Logger.info("API Controller started")
+      val dbUri = AppController.configuration.dbUri
+      if (!DataAccessManager.isReady) {
+        DataAccessManager.init(dbUri)
+        if (!DataAccessManager.isReady) {
+          Logger.error("Could not start the DataAccessManager, " +
+            s"it is possible that the DB server may be down ($dbUri)")
+          throw new DbException(s"Could not connect to the DB server at $dbUri")
+        }
       }
     }
 

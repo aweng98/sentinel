@@ -1,6 +1,7 @@
 import com.alertavert.sentinel.model.{Organization, User}
-import play.api.libs.json.{JsUndefined, JsArray, JsValue, Json}
-import scala.Int
+import play.api.libs.json.{JsArray, JsValue, Json}
+
+import scala.io.Source
 
 class Person(val id: Int, name: String) {
   override def toString = name
@@ -86,14 +87,20 @@ try {
 }
 
 
-val org = Organization.builder("foo") build
-val org2 = Organization.builder("foo") build
-val org3 = Organization.builder("foo") build
+val org = Organization.builder("org") build
+val org2 = Organization.builder("org2") build
+val org3 = Organization.builder("org3") build
 
 val ps = Map(
-  org -> "user",
-  org2 -> "admin",
-  org3 -> "buzz"
+  org -> "user-1",
+  org2 -> "user-2",
+  org3 -> "user-3"
 )
 
 Json.toJson(ps.map(x => s"""{"org": "${x._1.name}", "role": "${x._2}"}"""))
+
+val ss = Source.fromFile("/tmp/test.json").getLines().mkString
+val users = Json.parse(ss).as[List[Map[String, JsValue]]]
+
+users.foreach(user => println(user.get("credentials")))
+

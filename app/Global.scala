@@ -1,5 +1,6 @@
 
 import com.alertavert.sentinel.errors._
+import controllers.{ApiController, AppController}
 import play.api._
 import play.api.libs.json.Json
 import play.api.mvc._
@@ -88,4 +89,13 @@ object Global extends GlobalSettings {
     Future.successful(BadRequest(content))
   }
 
+  override def onStart(app: Application) {
+    Logger.info("Application has started")
+    ApiController.initialize()
+    AppController.initialize()
+  }
+
+  override def onStop(app: Application) {
+    Logger.info("Application shutdown...")
+  }
 }

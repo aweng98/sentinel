@@ -1,7 +1,3 @@
-if (window.console) {
-    console.log("Starting AngularJS Sentinel UI");
-}
-
 
 angular.module('sentinelApp', [])
 
@@ -12,7 +8,7 @@ angular.module('sentinelApp', [])
 
         self.login = function () {
             console.log("Logging in " + self.user.username);
-            // TODO: use $get to execute an AJAX call to auth user
+            self.errMsg = null;
             http.post('/login', self.user).then(
                 function(response) {
                     console.log('User authenticated');
@@ -23,6 +19,7 @@ angular.module('sentinelApp', [])
                 },
                 function(err) {
                     console.log('There was an error: ' + err);
+                    self.errMsg = err.data.error;
                 }
             );
         };
@@ -34,4 +31,10 @@ angular.module('sentinelApp', [])
         self.logout = function() {
             self.user = null;
         }
-    }]);
+    }])
+
+    .controller('Users' +
+    'Ctrl', ['$http', '$log', function (http, log) {
+        var self = this;
+        self.test = "Users show up here"
+    }])
