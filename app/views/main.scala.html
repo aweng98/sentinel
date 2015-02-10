@@ -16,6 +16,7 @@
     <body ng-controller="SentinelCtrl as ctrl">
         <div ng-class='ctrl.msgClass'> {{ ctrl.message }} </div>
         <div class="apiKey">
+            <span ng-bind="ctrl.user.username"></span>&nbsp;&nbsp;
             API Key: <span ng-bind="ctrl.user.apiKey"></span>
             <span class="logout">
                 <a ng-show="ctrl.authenticated()"
@@ -41,8 +42,29 @@
                 ng-disabled="loginForm.$invalid">
         </form>
 
-        <div ng-controller="UsersCtrl as users" ng-show="ctrl.authenticated()">
-            {{ users.test }}
+        <div ng-show="ctrl.authenticated()">
+            <div ng-class="ctrl.heading">{{ ctrl.header }}</div>
+            <button ng-click="ctrl.getUsers()">Get users</button><br>
+            <div ng-repeat="user in ctrl.users" ng-class-even="even-item"
+                 ng-class-odd="odd-item">
+                <span><a href="#" ng-click="ctrl.getUser(user.id);">
+                    {{ user.credentials.username }}</a></span>
+                <span>{{ user.first_name }}&nbsp;{{ user.last_name }}</span>
+                <span>{{ user.last_seen }}</span>
+            </div>
+            <span class="err-msg" ng-show="ctrl.errMsg">{{ ctrl.errMsg }}</span>
+        </div>
+
+        <div ng-show="ctrl.userData" ng-class="ctrl.userDataClass(ctrl.userData.active)"
+             class="userView">
+            <h4>User:</h4>
+            <div>First Name:&nbsp;<span ng-bind="ctrl.userData.first_name"></span></div>
+            <div>Last Name:&nbsp;<span ng-bind="ctrl.userData.last_name"></span></div>
+            <div>Created:&nbsp;<span ng-bind="ctrl.userData.created_when"></span></div>
+            <div>Last logged in:&nbsp;<span ng-bind="ctrl.userData.last_seen"></span></div>
+            <h4>Credentials:</h4>
+            <div>Username:&nbsp;<span ng-bind="ctrl.userData.credentials.username"></span></div>
+            <div>API Key:&nbsp;<span ng-bind="ctrl.userData.credentials.api_key"></span></div>
         </div>
 
     </body>

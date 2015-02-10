@@ -48,3 +48,18 @@ body {
     color: #BB2020;
     padding: 0.2em 15px;
 }
+
+.userView {
+    width: 70%;
+    margin: 30px;
+    padding: 20px;
+}
+
+.activeUser {
+    border: solid 1px green;
+}
+
+.inactiveUser {
+    border: solid 1px silver;
+    color: darkgray;
+}

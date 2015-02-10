@@ -83,7 +83,7 @@ class ControllerSpec extends PlaySpec with Results with OneAppPerSuite with Befo
     testController = new Controller with ApiController
     def fakeRequest(method: String = "GET", route: String = "/") = FakeRequest(method, route)
       .withHeaders(
-        ("Date", "2014-10-05T22:00:00"),
+        ("x-date", "2014-10-05T22:00:00"),
         ("Authorization", "username=bob;hash=foobar==")
       )
   }

@@ -165,8 +165,8 @@ package object security {
   // TODO: the returned errors disclose too much information; replace with generic errors in Prod
   def validateHash[A](request: Request[A]): Option[User] = {
 
-    val date = request.headers.get("Date").getOrElse(
-      throw new AuthenticationError("Missing `Date:` header"))
+    val date = request.headers.get("x-date").getOrElse(
+      throw new AuthenticationError("Missing `x-date:` header"))
     // TODO: verify that the Date this request is signed with is not a replay attack
     logger.debug(s"Request sent at $date")
 
