@@ -81,4 +81,20 @@ angular.module('sentinelApp', [])
                 inactiveUser: !isActive
             };
         };
+
+        self.createUser = function(user) {
+            var config = {
+                method: 'POST',
+                url: '/user',
+                headers: headers(),
+                data: user
+            }
+            http(config).success(function(response) {
+                self.usrMsg = 'User ' + response.credentials.username + ' created [' + response.id + ']';
+                self.userData = response;
+                self.getUsers();
+            }).error(function(errResponse) {
+                self.errMsg = errResponse;
+            })
+        };
     }]);

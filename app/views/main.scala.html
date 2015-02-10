@@ -44,7 +44,8 @@
 
         <div ng-show="ctrl.authenticated()">
             <div ng-class="ctrl.heading">{{ ctrl.header }}</div>
-            <button ng-click="ctrl.getUsers()">Get users</button><br>
+            <button ng-click="ctrl.getUsers()">Get users</button>
+            <button ng-click="showCreateForm = true;">Create user</button><br>
             <div ng-repeat="user in ctrl.users" ng-class-even="even-item"
                  ng-class-odd="odd-item">
                 <span><a href="#" ng-click="ctrl.getUser(user.id);">
@@ -66,6 +67,31 @@
             <div>Username:&nbsp;<span ng-bind="ctrl.userData.credentials.username"></span></div>
             <div>API Key:&nbsp;<span ng-bind="ctrl.userData.credentials.api_key"></span></div>
         </div>
+
+        <form class="login-form" ng-show="showCreateForm"
+            ng-submit="ctrl.createUser(user)" name="userCreateForm">
+            <label for="firstname" class="label">First and Last Name:</label><br />
+            <input id="firstname" type="text"
+                ng-model="user.first_name"
+                placeholder="First Name" >
+            <input id="lastname" type="text"
+                ng-model="user.last_name"
+                placeholder="Last Name" ><br />
+            <label for="username" class="label">Username:</label><br />
+            <input id="username" type="text"
+                ng-model="user.credentials.username"
+                required
+                ng-minlength="6"
+                placeholder="Username (min 6 letters)" ><br />
+            <label for="password" class="label">Password:</label><br />
+            <input id="password" type="password"
+                ng-model="user.credentials.password"
+                required
+                placeholder="Password (required)" ><br />
+            <span class="err-msg" ng-show="ctrl.errMsg">{{ ctrl.errMsg }}</span>
+            <input type="submit" value="Create" class="submit-button"
+                ng-disabled="userCreateForm.$invalid">
+        </form>
 
     </body>
 
