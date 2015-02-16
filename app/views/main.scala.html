@@ -12,6 +12,13 @@
         <title>@title</title>
         <link rel="stylesheet" media="screen" href='@routes.Assets.at("stylesheets/main.css")'>
         <link rel="shortcut icon" type="image/png" href='@routes.Assets.at("images/favicon.png")'>
+
+        <!-- Loading the main AngularJS library
+            <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.19/angular.js"></script>
+        -->
+        <script src='@routes.Assets.at("scripts/angular.js")' type="text/javascript"></script>
+        <script src='@routes.Assets.at("scripts/angular-route.js")' type="text/javascript"></script>
+        <script src='@routes.Assets.at("scripts/ntApp.js")' type="text/javascript"></script>
     </head>
     <body ng-controller="SentinelCtrl as ctrl">
         <div ng-class='ctrl.msgClass'> {{ ctrl.message }} </div>
@@ -20,84 +27,29 @@
             API Key: <span ng-bind="ctrl.user.apiKey"></span>
             <span class="logout">
                 <a ng-show="ctrl.authenticated()"
-                   ng-click="ctrl.logout()" href="#">Logout</a>
+                ng-click="ctrl.logout()" href="#">Logout</a>
             </span>
         </div>
 
         <form class="login-form" ng-hide="ctrl.authenticated()"
-                ng-submit="ctrl.login()" name="loginForm">
+        ng-submit="ctrl.login()" name="loginForm">
             <label for="username" class="label">Username:</label><br />
             <input id="username" type="text"
-                   ng-model="ctrl.user.username"
-                   required
-                   ng-minlength="6"
-                   placeholder="Username (min 6 letters)" ><br />
+            ng-model="ctrl.user.username"
+            required
+            ng-minlength="6"
+            placeholder="Username (min 6 letters)" ><br />
             <label for="password" class="label">Password:</label><br />
             <input id="password" type="password"
-                   ng-model="ctrl.user.password"
-                   required
-                   placeholder="enter your password" ><br />
+            ng-model="ctrl.user.password"
+            required
+            placeholder="enter your password" ><br />
             <span class="err-msg" ng-show="ctrl.errMsg">{{ ctrl.errMsg }}</span>
             <input type="submit" value="Login" class="submit-button"
-                ng-disabled="loginForm.$invalid">
+            ng-disabled="loginForm.$invalid">
         </form>
 
-        <div ng-show="ctrl.authenticated()">
-            <div ng-class="ctrl.heading">{{ ctrl.header }}</div>
-            <button ng-click="ctrl.getUsers()">Get users</button>
-            <button ng-click="showCreateForm = true;">Create user</button><br>
-            <div ng-repeat="user in ctrl.users" ng-class-even="even-item"
-                 ng-class-odd="odd-item">
-                <span><a href="#" ng-click="ctrl.getUser(user.id);">
-                    {{ user.credentials.username }}</a></span>
-                <span>{{ user.first_name }}&nbsp;{{ user.last_name }}</span>
-                <span>{{ user.last_seen }}</span>
-            </div>
-            <span class="err-msg" ng-show="ctrl.errMsg">{{ ctrl.errMsg }}</span>
-        </div>
-
-        <div ng-show="ctrl.userData" ng-class="ctrl.userDataClass(ctrl.userData.active)"
-             class="userView">
-            <h4>User:</h4>
-            <div>First Name:&nbsp;<span ng-bind="ctrl.userData.first_name"></span></div>
-            <div>Last Name:&nbsp;<span ng-bind="ctrl.userData.last_name"></span></div>
-            <div>Created:&nbsp;<span ng-bind="ctrl.userData.created_when"></span></div>
-            <div>Last logged in:&nbsp;<span ng-bind="ctrl.userData.last_seen"></span></div>
-            <h4>Credentials:</h4>
-            <div>Username:&nbsp;<span ng-bind="ctrl.userData.credentials.username"></span></div>
-            <div>API Key:&nbsp;<span ng-bind="ctrl.userData.credentials.api_key"></span></div>
-        </div>
-
-        <form class="login-form" ng-show="showCreateForm"
-            ng-submit="ctrl.createUser(user)" name="userCreateForm">
-            <label for="firstname" class="label">First and Last Name:</label><br />
-            <input id="firstname" type="text"
-                ng-model="user.first_name"
-                placeholder="First Name" >
-            <input id="lastname" type="text"
-                ng-model="user.last_name"
-                placeholder="Last Name" ><br />
-            <label for="username" class="label">Username:</label><br />
-            <input id="username" type="text"
-                ng-model="user.credentials.username"
-                required
-                ng-minlength="6"
-                placeholder="Username (min 6 letters)" ><br />
-            <label for="password" class="label">Password:</label><br />
-            <input id="password" type="password"
-                ng-model="user.credentials.password"
-                required
-                placeholder="Password (required)" ><br />
-            <span class="err-msg" ng-show="ctrl.errMsg">{{ ctrl.errMsg }}</span>
-            <input type="submit" value="Create" class="submit-button"
-                ng-disabled="userCreateForm.$invalid">
-        </form>
+        <div ng-view ng-show="ctrl.authenticated()">Here go the routing elements!</div>
 
     </body>
-
-    <!-- Loading the main AngularJS library
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.19/angular.js"></script>
-     -->
-    <script src='@routes.Assets.at("scripts/angular.js")' type="text/javascript"></script>
-    <script src='@routes.Assets.at("scripts/ntApp.js")' type="text/javascript"></script>
 </html>

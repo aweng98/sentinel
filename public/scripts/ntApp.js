@@ -1,18 +1,28 @@
 
-angular.module('sentinelApp', [])
+angular.module('sentinelApp', ['ngRoute'])
 
-    .controller('SentinelCtrl', ['$http', '$log', function (http, log) {
+    .config(['$routeProvider', function($routeProvider) {
+        $routeProvider.when('/', {
+            templateUrl: '/',
+            controller: 'SentinelCtrl as ctrl'
+        }).when('/listUsers', {
+            templateURL: '/listUsers',
+            controller: 'SentinelCtrl as ctrl'
+        })
+    }])
+
+    .controller('SentinelCtrl', ['$http', '$log', function ($http, $log) {
         var self = this;
-        self.message = 'Sentinel Controller loaded';
+        $log.info('Sentinel Controller loaded');
         self.msgClass = 'normal';
         self.header = "Sentinel Users";
         self.heading = "h3";
         self.users = [];
 
         self.login = function () {
-            console.log("Logging in " + self.user.username);
+            $log.info("Logging in " + self.user.username);
             self.errMsg = null;
-            http.post('/login', self.user).then(
+            $http.post('/login', self.user).then(
                 function(response) {
                     console.log('User authenticated');
                     var user = response.data;
@@ -23,7 +33,7 @@ angular.module('sentinelApp', [])
                     self.getUsers();
                 },
                 function(err) {
-                    console.log('There was an error: ' + err);
+                    $log.error('There was an error: ' + err.data.error);
                     self.errMsg = err.data.error;
                 }
             );
@@ -54,7 +64,7 @@ angular.module('sentinelApp', [])
                 url: '/user',
                 headers: headers()
             };
-            http(config).success(function (response) {
+            $http(config).success(function (response) {
                 self.users = response;
             }).error(function (errResponse) {
                 console.error("Could not retrieve users: " + errResponse);
@@ -68,7 +78,7 @@ angular.module('sentinelApp', [])
                 url: '/user/' + userId,
                 headers: headers()
             };
-            http(config).success(function (response) {
+            $http(config).success(function (response) {
                 self.userData = response;
             }).error(function (errResponse) {
                 console.error("Could not retrieve user [" + userId + "]: " + errResponse);
@@ -89,7 +99,7 @@ angular.module('sentinelApp', [])
                 headers: headers(),
                 data: user
             }
-            http(config).success(function(response) {
+            $http(config).success(function(response) {
                 self.usrMsg = 'User ' + response.credentials.username + ' created [' + response.id + ']';
                 self.userData = response;
                 self.getUsers();

@@ -124,6 +124,10 @@ trait AppController   {
       Ok(views.html.main("Sentinel UI"))
     }
 
+    def listUsers = Action {
+      Ok(views.html.listUsers("Sentinel Users"))
+    }
+
 
   /**
      * Application configuration values, abstracted from the configuration file (

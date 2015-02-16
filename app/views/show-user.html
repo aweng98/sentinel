@@ -1,0 +1,12 @@
+
+<div ng-show="ctrl.userData" ng-class="ctrl.userDataClass(ctrl.userData.active)"
+     class="userView">
+    <h4>User:</h4>
+    <div>First Name:&nbsp;<span ng-bind="ctrl.userData.first_name"></span></div>
+    <div>Last Name:&nbsp;<span ng-bind="ctrl.userData.last_name"></span></div>
+    <div>Created:&nbsp;<span ng-bind="ctrl.userData.created_when"></span></div>
+    <div>Last logged in:&nbsp;<span ng-bind="ctrl.userData.last_seen"></span></div>
+    <h4>Credentials:</h4>
+    <div>Username:&nbsp;<span ng-bind="ctrl.userData.credentials.username"></span></div>
+    <div>API Key:&nbsp;<span ng-bind="ctrl.userData.credentials.api_key"></span></div>
+</div>

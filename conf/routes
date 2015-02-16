@@ -54,3 +54,4 @@ GET           /status                     controllers.AppController.status
 
 # initial UI testing AngularJS:
 GET           /                           controllers.AppController.mainUi
+GET           /listUsers                  controllers.AppController.listUsers
