@@ -1,0 +1,53 @@
+<!--
+  ~ Copyright AlertAvert.com (c) 2014. All rights reserved.
+  ~ Commercial use or modification of this software without a valid license is expressly forbidden
+  -->
+
+<html ng-app="sentinelApp">
+<head>
+    <title>Sentinel UI</title>
+    <link rel="stylesheet" media="screen" href="stylesheets/main.css">
+    <link rel="shortcut icon" type="image/png" href="images/favicon.png">
+</head>
+<body ng-app="sentinelApp" ng-controller="SentinelCtrl as ctrl">
+<div ng-class='ctrl.msgClass'> {{ ctrl.message }}</div>
+<div class="apiKey">
+    <span ng-bind="ctrl.user.username"></span>&nbsp;&nbsp;
+    API Key: <span ng-bind="ctrl.user.apiKey"></span>
+            <span class="logout">
+                <a ng-show="ctrl.authenticated()"
+                   ng-click="ctrl.logout()" href="#">Logout</a>
+            </span>
+</div>
+
+<form class="login-form" ng-hide="ctrl.authenticated()"
+      ng-submit="ctrl.login()" name="loginForm">
+    <label for="username" class="label">Username:</label><br/>
+    <input id="username" type="text"
+           ng-model="ctrl.user.username"
+           required
+           ng-minlength="6"
+           placeholder="Username (min 6 letters)"><br/>
+    <label for="password" class="label">Password:</label><br/>
+    <input id="password" type="password"
+           ng-model="ctrl.user.password"
+           required
+           placeholder="enter your password"><br/>
+    <span class="err-msg" ng-show="ctrl.errMsg">{{ ctrl.errMsg }}</span>
+    <input type="submit" value="Login" class="btn"
+           ng-disabled="loginForm.$invalid">
+</form>
+
+<div ng-view ng-show="ctrl.authenticated()">Here go the routing elements!</div>
+
+<!-- Loading the main AngularJS library
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.19/angular.js"></script>
+-->
+<script src="scripts/angular.js" type="text/javascript"></script>
+<script src="scripts/angular-route.js" type="text/javascript"></script>
+<script src="scripts/app.js" type="text/javascript"></script>
+<script src="scripts/services.js" type="text/javascript"></script>
+<script src="scripts/controllers.js" type="text/javascript"></script>
+
+</body>
+</html>
