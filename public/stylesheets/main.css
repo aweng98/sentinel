@@ -7,7 +7,7 @@ body {
     background-color: dodgerblue;
 }
 
-input.btn {
+input.btn, button.btn {
     border: none;
 }
 
@@ -19,10 +19,17 @@ input.btn {
     font-size: 0.8em;
     padding: 2px 5px 2px 5px;
     text-decoration: none;
-    float: right;
     margin-top: 15px;
     margin-right: 10px;
     margin-bottom: 5px;
+}
+
+.cancel.btn {
+    background: #3498ff linear-gradient(to bottom, #3498ff, #2980b9);
+}
+
+.float-right {
+    float: right;
 }
 
 .btn:hover {

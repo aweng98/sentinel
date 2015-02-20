@@ -4,16 +4,21 @@
   -->
 
 <h4>Users</h4>
-<div ng-show="ctrl.authenticated()">
-    <div ng-class="ctrl.heading">{{ ctrl.header }}</div>
-    <button ng-click="ctrl.getUsers()">Get users</button>
-    <button ng-click="showCreateForm = true;">Create user</button><br>
+<h4>
+    <h4>Sentinel Users</h4>
+
     <div ng-repeat="user in ctrl.users" ng-class-even="even-item"
          ng-class-odd="odd-item">
-                <span><a href="#/showUser" ng-click="ctrl.getUser(user.id);">
+                <span><a href="#/showUser/{{user.id}}">
                     {{ user.credentials.username }}</a></span>
         <span>{{ user.first_name }}&nbsp;{{ user.last_name }}</span>
         <span>{{ user.last_seen }}</span>
     </div>
-    <span class="err-msg" ng-show="ctrl.errMsg">{{ ctrl.errMsg }}</span>
+    <div>
+        <span class="err-msg" ng-show="ctrl.errMsg">{{ ctrl.errMsg }}</span>
+    </div>
+</div>
+<div>
+    <button ng-click="ctrl.getUsers()" class="btn">Get users</button>&nbsp;
+    <button ng-click="showCreateForm = true;" class="btn">Create user</button>
 </div>

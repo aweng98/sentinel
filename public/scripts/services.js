@@ -4,19 +4,25 @@
 
 
 angular.module('sentinelApp')
-    .factory('SentinelService', ['$http',
-        function($http) {
+    .factory('SentinelService', ['$http', 'UserService', '$log',
+        function($http, usrSvc, $log) {
 
             // TODO: implement signature API
-            var hash = function() {
-                return "faferouaouvekarueiu";
+            var hash = function(apiKey) {
+                return "FIXME::signed-with-" + apiKey;
             };
 
-            // TODO: implement actual passing username in the service layer
-            var headers = function(username) {
+            var headers = function() {
+                if (! usrSvc.isLoggedIn) {
+                    $log.error("User is not logged in cannot validate request");
+                    return null;
+                }
+                var username = usrSvc.user.username;
+                var apiKey = usrSvc.user.apiKey;
                 return {
                     'x-date': new Date(),
-                    'Authorization': "username=" + username + ";hash=" + hash()
+                    // FIXME: we will need to pass the request URL / content for proper signing
+                    'Authorization': "username=" + username + ";hash=" + hash(apiKey)
                 };
             };
 

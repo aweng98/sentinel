@@ -55,7 +55,7 @@ angular.module('sentinelApp')
                 SentinelService.getUser(userId).success(function () {
                     self.userData = SentinelService.userData;
                     $log.info("Retrieved " + self.userData.username);
-                    $location.path('/showUser');
+                    $location.path('/showUser/' + userId);
                 }).error(function (errResponse) {
                     $log.error("Could not retrieve user [" + userId + "]: " + errResponse);
                     self.errMsg = errResponse;
