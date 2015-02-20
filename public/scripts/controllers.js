@@ -50,7 +50,7 @@ angular.module('sentinelApp')
                     self.users = SentinelService.users;
                 })
             };
-            
+
             self.getUser = function (userId) {
                 SentinelService.getUser(userId).success(function () {
                     self.userData = SentinelService.userData;

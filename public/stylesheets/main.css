@@ -1,11 +1,11 @@
 
-body {
-    font-family: "Trebuchet MS", Verdana, Geneva, Arial, Helvetica, sans-serif;
-}
-.normal {
-    color: whitesmoke;
-    background-color: dodgerblue;
-}
+/*body {*/
+    /*font-family: "Trebuchet MS", Verdana, Geneva, Arial, Helvetica, sans-serif;*/
+/*}*/
+/*.normal {*/
+    /*color: whitesmoke;*/
+    /*background-color: dodgerblue;*/
+/*}*/
 
 input.btn, button.btn {
     border: none;

@@ -6,10 +6,11 @@
 <html ng-app="sentinelApp">
 <head>
     <title>Sentinel UI</title>
+    <link rel="stylesheet" href="stylesheets/bootstrap.css">
     <link rel="stylesheet" media="screen" href="stylesheets/main.css">
     <link rel="shortcut icon" type="image/png" href="images/favicon.png">
 </head>
-<body ng-app="sentinelApp" ng-controller="SentinelCtrl as ctrl">
+<body ng-app="sentinelApp" ng-controller="SentinelCtrl as ctrl" class="landing">
 <div ng-class='ctrl.msgClass'> {{ ctrl.message }}</div>
 <div class="apiKey">
     <span ng-bind="ctrl.user.username"></span>&nbsp;&nbsp;
@@ -20,20 +21,21 @@
             </span>
 </div>
 
-<form class="login-form" ng-hide="ctrl.authenticated()"
+<form ng-hide="ctrl.authenticated()"
       ng-submit="ctrl.login()" name="loginForm">
-    <label for="username" class="label">Username:</label><br/>
+    <label for="username">Username:</label><br/>
     <input id="username" type="text"
            ng-model="ctrl.user.username"
            required
            ng-minlength="6"
            placeholder="Username (min 6 letters)"><br/>
-    <label for="password" class="label">Password:</label><br/>
+    <label for="password">Password:</label><br/>
     <input id="password" type="password"
            ng-model="ctrl.user.password"
            required
            placeholder="enter your password"><br/>
     <span class="err-msg" ng-show="ctrl.errMsg">{{ ctrl.errMsg }}</span>
+
     <input type="submit" value="Login" class="btn float-right"
            ng-disabled="loginForm.$invalid">
 </form>
