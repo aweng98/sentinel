@@ -3,22 +3,27 @@
   ~ Commercial use or modification of this software without a valid license is expressly forbidden
   -->
 
-<h4>Users</h4>
-<h4>
-    <h4>Sentinel Users</h4>
-
-    <div ng-repeat="user in ctrl.users" ng-class-even="even-item"
-         ng-class-odd="odd-item">
-                <span><a href="#/showUser/{{user.id}}">
-                    {{ user.credentials.username }}</a></span>
-        <span>{{ user.first_name }}&nbsp;{{ user.last_name }}</span>
-        <span>{{ user.last_seen }}</span>
-    </div>
-    <div>
-        <span class="err-msg" ng-show="ctrl.errMsg">{{ ctrl.errMsg }}</span>
-    </div>
-</div>
-<div>
-    <button ng-click="ctrl.getUsers()" class="btn">Get users</button>&nbsp;
-    <button ng-click="showCreateForm = true;" class="btn">Create user</button>
+<div class="page-header"><h1>Users</h1></div>
+<div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Username</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Last login</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="user in ctrl.users">
+                <td><a href="#/showUser/{{user.id}}">{{ user.credentials.username }}</a></td>
+                <td>{{ user.first_name }}</td>
+                <td>{{ user.last_name }}</td>
+                <td>{{ user.last_seen }}</td>
+            </tr>
+            </tbody>
+        </table>
+        <div>
+            <span class="err-msg" ng-show="ctrl.errMsg">{{ ctrl.errMsg }}</span>
+        </div>
 </div>
