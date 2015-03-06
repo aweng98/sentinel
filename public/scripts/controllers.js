@@ -72,5 +72,9 @@ angular.module('sentinelApp')
             self.getSignedUserAcct = function() {
                 self.getUser(self.user.id);
                 $log.info('Current user: ', self.userData.first_name);
+            };
+
+            self.path = function(newPath) {
+                $location.path(newPath);
             }
         }]);

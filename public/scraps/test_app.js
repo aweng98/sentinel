@@ -2,12 +2,12 @@ angular.module('testApp', ['ngRoute'])
 
     .config(['$routeProvider', function($routeProvider) {
         $routeProvider.when('/', {
-            template: '<p>TODO: create a default page</p>'
+            template: '<h1>Home Page</h1>'
         }).when('/first', {
-            templateUrl: '/ui/first.html',
+            template: '<p>First</p>',
             controller: 'MainCtrl as ctrl'
         }).when('/second', {
-            templateUrl: '/ui/second.html',
+            template: '<p>second</p>',
             controller: 'MainCtrl as ctrl'
         });
         $routeProvider.otherwise({
@@ -28,13 +28,14 @@ angular.module('testApp', ['ngRoute'])
                 todo: function() {return self.todo;}
             }
     }])
-    .controller('MainCtrl', ['TestService', '$log', '$location',
-        function (TestService, $log, $location) {
+    .controller('MainCtrl', ['TestService', '$log', '$location', '$route',
+        function (TestService, $log, $location, $route) {
             var self = this;
             self.value = 99;
             self.svcVal = TestService.todo();
             $log.info('Test Controller loaded');
 
+            self.newPath = null;
 
             self.test = function() {
                 self.value += 1;
@@ -47,7 +48,10 @@ angular.module('testApp', ['ngRoute'])
             };
             self.second = function() {
                 $location.path('/second');
+            };
+            self.path = function() {
+                $log.info("Current: " + $route.current.locals.$template);
+                $location.path(self.newPath);
             }
-
 
         }]);

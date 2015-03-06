@@ -3,6 +3,10 @@ body {
     padding-top: 70px;
 }
 
+.strong {
+    font-weight: bold;
+}
+
 .form-signin
 {
     max-width: 330px;
@@ -17,6 +21,7 @@ body {
 {
     font-weight: normal;
 }
+
 .form-signin .form-control
 {
     position: relative;

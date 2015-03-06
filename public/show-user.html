@@ -1,18 +1,64 @@
+<div class="container"
+     ng-show="ctrl.userData" ng-class="ctrl.userDataClass(ctrl.userData.active)">
+    <div class="page-header"><h1>User Details</h1></div>
+    <div class="col-md-8 col-md-offset-2">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h3 class="panel-title">User</h3>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div>
+                    <span class="col-md-3 strong"> First Name: </span>
+                    <span class="col-md-7 col-md-offset-1"
+                          ng-bind="ctrl.userData.first_name"></span>
+                    </div>
+                </div>
+                <div class="row">
+                    <div>
+                    <span class="col-md-3 strong">
+                        Last Name:
+                    </span>
+                    <span class="col-md-7 col-md-offset-1"
+                          ng-bind="ctrl.userData.last_name"></span>
 
+                    </div>
+                </div>
+                <div class="row">
 
-<div ng-show="ctrl.userData" ng-class="ctrl.userDataClass(ctrl.userData.active)"
-     class="userView">
-    <h4>User</h4>
-    <div>First Name:&nbsp;<span ng-bind="ctrl.userData.first_name"></span></div>
-    <div>Last Name:&nbsp;<span ng-bind="ctrl.userData.last_name"></span></div>
-    <div>Created:&nbsp;<span ng-bind="ctrl.userData.created_when"></span></div>
-    <div>Last logged in:&nbsp;<span ng-bind="ctrl.userData.last_seen"></span></div>
-    <h4>Credentials</h4>
-    <div>Username:&nbsp;<span ng-bind="ctrl.userData.username"></span></div>
-    <div>API Key:&nbsp;<span ng-bind="ctrl.userData.apiKey"></span></div>
-</div>
-<div>
-    <a ng-href="#/createUser" class="btn">Create user</a>
-    <a ng-href="#/showUser/{{ctrl.user.id}}" class="btn">User Account</a>
-    <a ng-href="#/listUsers" class="btn float-right">Back</a>
+                    <span class="col-md-3 strong"> Created: </span>
+                    <span class="col-md-7 col-md-offset-1"
+                          ng-bind="ctrl.userData.created_when"></span>
+                </div>
+                <div class="row">
+                    <span class="col-md-3 strong">Last logged in:</span>
+                    <span class="col-md-7 col-md-offset-1"
+                          ng-bind="ctrl.userData.last_seen"></span>
+                </div>
+
+                <h5>Credentials</h5>
+                <div class="row">
+                    <span class="col-md-3 strong">Username:</span>
+                    <span class="col-md-7 col-md-offset-1"
+                           ng-bind="ctrl.userData.username"></span>
+                </div>
+                <div class="row">
+                    <span class="col-md-3 strong">API Key:</span>
+                    <span class="col-md-7 col-md-offset-1"
+                          ng-bind="ctrl.userData.apiKey"></span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="col-md-2"></div>
+    <p class="col-md-offset-2 col-md-4">
+        <button type="button"
+                ng-click="ctrl.path('/createUser');" class="btn btn-xs btn-primary">Create user</button>
+        <button type="button"
+                ng-click="ctrl.path('/showUser/' + ctrl.user.id);" class="btn btn-xs btn-primary">User Account</button>
+        <button type="button"
+                ng-click="ctrl.path('/listUsers');" class="btn btn-xs btn-default">Back</button>
+    </p>
+
 </div>

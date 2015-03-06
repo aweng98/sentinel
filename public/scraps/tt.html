@@ -6,7 +6,8 @@
 <html>
 <head>
     <title>Test Angular</title>
-    <link rel="stylesheet" media="screen" href="stylesheets/main.bak.css">
+    <link rel="stylesheet" media="screen" href="../stylesheets/bootstrap.css">
+    <link rel="stylesheet" media="screen" href="../stylesheets/bootstrap-theme.css">
 </head>
 <body ng-app="testApp" ng-controller="MainCtrl as ctrl">
 
@@ -14,15 +15,19 @@
     <button ng-click="ctrl.first()" class="btn">First</button><br/>
     <button ng-click="ctrl.second()" class="btn">Second</button><br/>
 </div>
+<div>
+    <input type="text" placeholder="enter new path here" ng-model="ctrl.newPath">
+    <button ng-click="ctrl.path('#/first')" class="btn">Path test</button>
+</div>
 
 <div ng-view>Here go the routing elements!</div>
 
 <!-- Loading the main AngularJS library
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.19/angular.js"></script>
 -->
-<script src="scripts/angular.js" type="text/javascript"></script>
-<script src="scripts/angular-route.js" type="text/javascript"></script>
-<script src="scripts/test_app.js" type="text/javascript"></script>
+<script src="../scripts/angular.js" type="text/javascript"></script>
+<script src="../scripts/angular-route.js" type="text/javascript"></script>
+<script src="test_app.js" type="text/javascript"></script>
 
 </body>
 </html>
