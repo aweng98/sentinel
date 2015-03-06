@@ -62,6 +62,19 @@ angular.module('sentinelApp')
                 });
             };
 
+            self.createUser = function(user) {
+              $log.info('Creating a new user for: ' + user.credentials.username);
+                SentinelService.createUser(user).error(function(errResponse) {
+                    $log.error("Could not create a new user [" + user.credentials.username + "]: " + errResponse);
+                    self.errMsg = errResponse;
+                }).success(function() {
+                    $log.info("User created: " + user.credentials.username);
+                    self.userMsg = 'Success: User ' + user.credentials.username + ' created';
+                    $location.path('/');
+                })
+
+            };
+
             self.userDataClass = function (isActive) {
                 return {
                     activeUser: isActive,
