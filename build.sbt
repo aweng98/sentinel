@@ -14,7 +14,7 @@ scalacOptions ++= Seq("-deprecation", "-feature", "-language:postfixOps")
 
 // Code coverage and support for coveralls.io
 // See: https://github.com/scoverage/sbt-scoverage
-coverageExcludedPackages := "<empty>;controllers\\..*Reverse.*"
+coverageExcludedPackages := "<empty>;controllers\\..*Reverse.*;"
 
 coverageMinimum := 80
 

@@ -120,10 +120,9 @@ trait AppController   {
    *
    * @return
    */
-    def mainUi = Action {
-      Ok(views.html.main("Sentinel UI"))
+    def index = Action {
+      Ok(views.html.main("Sentinel API"))
     }
-
 
   /**
      * Application configuration values, abstracted from the configuration file (

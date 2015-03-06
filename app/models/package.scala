@@ -166,7 +166,7 @@ package object security {
   def validateHash[A](request: Request[A]): Option[User] = {
 
     val date = request.headers.get("x-date").getOrElse(
-      throw new AuthenticationError("Missing `x-date:` header"))
+      throw new AuthenticationError("Missing `x-date` header"))
     // TODO: verify that the Date this request is signed with is not a replay attack
     logger.debug(s"Request sent at $date")
 

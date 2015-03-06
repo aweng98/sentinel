@@ -2,8 +2,9 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-# Map static resources from the /public folder to the /assets URL path
-GET           /assets/*file               controllers.Assets.at(path="/public", file)
+# Map static resources from the /public folder to the /assets and /ui URL paths
+GET           /assets/*file         controllers.Assets.at(path="/public", file)
+GET           /ui/*file             controllers.Assets.at(path="/public", file)
 
 # User login - returns the API Key
 POST          /login                      controllers.ApiController.login
@@ -52,5 +53,5 @@ DELETE        /asset/:id                  controllers.ApiController.removeAsset(
 GET           /health                     controllers.AppController.health
 GET           /status                     controllers.AppController.status
 
-# initial UI testing AngularJS:
-GET           /                           controllers.AppController.mainUi
+# Main page, contains a link to the SPA (Angular)
+GET           /                           controllers.AppController.index
