@@ -4,6 +4,7 @@
 package com.alertavert.sentinel.controllers
 
 
+import com.alertavert.sentinel.errors.AuthenticationError
 import com.alertavert.sentinel.model.{Organization, User}
 import com.alertavert.sentinel.persistence.DataAccessManager
 import com.alertavert.sentinel.persistence.mongodb.{UserOrgsAssocDao, MongoOrganizationDao, MongoUserDao}
@@ -170,7 +171,6 @@ class ApiControllerSpec extends ControllerSpec {
     val request = fakeRequest("POST", s"/user/$usrId/org/$orgId").withBody(
       Json.parse("""{"role": "test-user"}"""))
     val apiResult = call(testController.assocUserOrg(usrId.toString, orgId.toString), request)
-    println(contentAsString(apiResult))
     status(apiResult) must be (CREATED)
     val assoc = UserOrgsAssocDao().getByUserid(usrId)
     assoc.organizations.map(_._1.id) must contain (Some(orgId))
@@ -214,5 +214,29 @@ class ApiControllerSpec extends ControllerSpec {
     val users = makeUsers(10)
     val dao = MongoUserDao()
     users.foreach(u => dao.find(u.id.get) mustNot be (None))
+  }
+
+  "Login" should {
+    "reject a bogus user" in new WithControllerAndRequest {
+      val request = fakeRequest("POST", "/login").withJsonBody(Json.parse(
+      s"""{"username": "haker",
+          |"password": "123456"
+          |}""".stripMargin))
+      val res = call(testController.login, request)
+      // The auth error is thrown by checking the status of the response (which causes the future
+      // to be evaluated and the auth to fail):
+      an [AuthenticationError] should be thrownBy status(res)
+    }
+
+    "accept a valid user" in new WithControllerAndRequest {
+      val user = makeUsers(1)(0)
+      val request = fakeRequest("POST", "/login").withJsonBody(Json.parse(
+      s"""{"username": "${user.getCredentials.username}",
+          |"password": "${TEST_PASSWORD}"
+          |}""".stripMargin))
+      val res = call(testController.login, request)
+      status(res) must be (OK)
+      contentAsString(res) contains "api_key"
+    }
   }
 }

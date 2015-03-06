@@ -36,6 +36,8 @@ class ControllerSpec extends PlaySpec with Results with OneAppPerSuite with Befo
     DataAccessManager.db.dropDatabase()
   }
 
+  val TEST_PASSWORD: String = "zikret"
+
   /**
    * Helper method to create a few users that the individual tests can use
    * These will have usernames `user_nn` where `nn` is between `1` and `num`
@@ -50,7 +52,7 @@ class ControllerSpec extends PlaySpec with Results with OneAppPerSuite with Befo
       dao.findByName(username) match {
         case None => {
           val user = User.builder(s"User-$i") hasCreds Credentials(username,
-            "zikret") build()
+            TEST_PASSWORD) build()
           dao << user
           user
         }
