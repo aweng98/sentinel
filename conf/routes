@@ -2,9 +2,17 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
+# TODO: all the Web UI routes will have to be removed, and managed via Ngnix
+# Main page, contains a link to the SPA (Angular)
+GET           /                           controllers.AppController.index
 # Map static resources from the /public folder to the /assets and /ui URL paths
 GET           /assets/*file         controllers.Assets.at(path="/public", file)
-GET           /ui/*file             controllers.Assets.at(path="/public", file)
+GET           /web/*file             controllers.Assets.at(path="/public", file)
+
+# ~~~~
+# REST API Routes
+
+# TODO: all the REST routes should have a /api/v1 prefix
 
 # User login - returns the API Key
 POST          /login                      controllers.ApiController.login
@@ -13,45 +21,42 @@ POST          /login                      controllers.ApiController.login
 #### REST API
 #
 # Users:
-GET           /user                       controllers.ApiController.users
-GET           /user/:id                   controllers.ApiController.userById(id)
-POST          /user                       controllers.ApiController.createUser
-PUT           /user/:id                   controllers.ApiController.modifyUser(id)
+GET           /api/v1/user            controllers.ApiController.users
+GET           /api/v1/user/:id        controllers.ApiController.userById(id)
+POST          /api/v1/user            controllers.ApiController.createUser
+PUT           /api/v1/user/:id        controllers.ApiController.modifyUser(id)
 
 # Organizations
-GET           /org                        controllers.ApiController.orgs
-GET           /org/:id                    controllers.ApiController.orgById(id)
-POST          /org                        controllers.ApiController.createOrg
-PUT           /org/:id                    controllers.ApiController.modifyOrg(id)
+GET           /api/v1/org             controllers.ApiController.orgs
+GET           /api/v1/org/:id         controllers.ApiController.orgById(id)
+POST          /api/v1/org             controllers.ApiController.createOrg
+PUT           /api/v1/org/:id         controllers.ApiController.modifyOrg(id)
 
 # Users - Orgs
 #
 # Gets all organizations a User is associated with
-GET           /user/:id/org               controllers.ApiController.getUsersOrgs(id)
+GET           /api/v1/user/:id/org    controllers.ApiController.getUsersOrgs(id)
 #
 # Looks up all users that are associated with the given Organization
-GET           /org/:id/user               controllers.ApiController.getAllUsersForOrg(id)
+GET           /api/v1/org/:id/user    controllers.ApiController.getAllUsersForOrg(id)
 #
 # Creates a new association between a User and an Organization
-POST          /user/:uid/org/:oid         controllers.ApiController.assocUserOrg(uid, oid)
+POST          /api/v1/user/:uid/org/:oid         controllers.ApiController.assocUserOrg(uid, oid)
 #
 # Removes the association (both the User and the Org are left otherwise untouched)
-DELETE        /user/:uid/org/:oid         controllers.ApiController.removeAssocUserOrg(uid, oid)
+DELETE        /api/v1/user/:uid/org/:oid         controllers.ApiController.removeAssocUserOrg(uid, oid)
 
 # Assets and Resources
 #
 # Assets can be used as basic building blocks, where only the UID matters
 #
-POST          /asset                      controllers.ApiController.createAsset
-GET           /asset/:id                  controllers.ApiController.assetById(id)
-PUT           /asset/:id                  controllers.ApiController.updateAsset(id)
-PUT           /asset/:id/user/:uid        controllers.ApiController.changeAssetOwner(id, uid)
-DELETE        /asset/:id                  controllers.ApiController.removeAsset(id)
+POST          /api/v1/asset           controllers.ApiController.createAsset
+GET           /api/v1/asset/:id       controllers.ApiController.assetById(id)
+PUT           /api/v1/asset/:id       controllers.ApiController.updateAsset(id)
+PUT           /api/v1/asset/:id/user/:uid        controllers.ApiController.changeAssetOwner(id, uid)
+DELETE        /api/v1/asset/:id       controllers.ApiController.removeAsset(id)
 #
 # Application status and configuration
 #
-GET           /health                     controllers.AppController.health
-GET           /status                     controllers.AppController.status
-
-# Main page, contains a link to the SPA (Angular)
-GET           /                           controllers.AppController.index
+GET           /api/v1/health          controllers.AppController.health
+GET           /api/v1/status          controllers.AppController.status

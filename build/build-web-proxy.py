@@ -26,12 +26,12 @@ __email__ = 'marco@alertavert.com'
 import argparse
 import logging
 import os
-from sh import tar, cp, docker
-import sys
+from sh import tar, cp, docker, ErrorReturnCode
 import tempfile
 
 
 LOG_FORMAT = '%(asctime)s [%(levelname)-5s] %(message)s'
+DOCKER_IMAGE = 'massenz/sentinel-nginx'
 
 
 def parse_args():
@@ -44,7 +44,7 @@ def parse_args():
     parser.add_argument('--dockerfile', default='build/web-ui.Dockerfile',
                         help="the location of the Dockerfile Jinja template")
     parser.add_argument('--logdir', default=None,
-                        help="The direcory to use for the log files, if none given, uses stdout")
+                        help="The direcory to use for the log files; if not given, uses stdout")
     parser.add_argument('--public', '-p', default='public',
                         help='The location of the static files (HTML, CSS, JS, etc.)')
     parser.add_argument('--config', '-c', default='build/nginx.conf',
@@ -69,19 +69,27 @@ def main(cfg):
         exit(1)
 
     workdir = tempfile.mkdtemp()
-    log.debug("Created temporary directory {}".format(workdir))
+    logging.debug("Created temporary directory {}".format(workdir))
     tarfile = os.path.join(workdir, 'sentinel-webui.tar.gz')
-    tar("caf", tarfile, '-C', pub_dir, '.')
+    tar("caf", tarfile, '-C', pub_dir, '--exclude-tag-all=NO_EXPORT', '.')
     logging.debug("Compressed all public static files to {}".format(tarfile))
     if os.path.exists(nginx_conf):
         cp(nginx_conf, workdir)
         logging.debug("Copied ngnix configuration file {} to {}".format(
             nginx_conf, os.path.join(workdir, nginx_conf)
         ))
-    os.chdir(workdir)
-    dout = docker('build', '.', '-t', 'sentinel-ngnix')
+    logging.info("Building docker image...")
+    cp(dockerfile, os.path.join(workdir, 'Dockerfile'))
+    try:
+        dout = docker('build', '-t', DOCKER_IMAGE, workdir)
+    except ErrorReturnCode as ex:
+        logging.error(ex)
+        logging.error("Failed to generate the Docker image")
+        exit(1)
+    # TODO: parse stdout to extract the actual image name
     logging.debug(dout)
-    logging.info("Successfully built Docker image `{}` for Sentinel Web UI".format('sentinel-ngnix'))
+    logging.info("Successfully built Docker image `{}` for Sentinel Web UI".format(
+        DOCKER_IMAGE))
     logging.info("You can now start the container using "
                  "`docker run --name sentinel-web -d -p 80:80 sentinel-nginx`")
     logging.info("Docker image build complete.")
@@ -91,10 +99,8 @@ if __name__ == '__main__':
     config = parse_args()
     logfile = None
     if config.logdir:
-        logfile = os.path.join(os.path.expanduser(config.logdir), 'messages.log')
-    level = logging.INFO
-    if config.debug:
-        level = logging.DEBUG
+        logfile = os.path.join(os.path.expanduser(config.logdir), 'build-web-proxy.log')
+    level = logging.DEBUG if config.debug else logging.INFO
     if logfile:
         print("All logging going to {} (debug info {})".format(
             logfile, 'enabled' if config.debug else 'disabled'))

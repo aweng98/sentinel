@@ -5,7 +5,7 @@ angular.module('sentinelApp', ['ngRoute'])
         $routeProvider.when('/', {
             template: '<p>TODO: create a default page</p>'
         }).when('/listUsers', {
-            templateUrl: '/ui/list-users.html',
+            templateUrl: '/web/list-users.html',
             controller: 'SentinelCtrl as ctrl',
             resolve: {
                 async: ['SentinelService', function(apiService) {
@@ -13,7 +13,7 @@ angular.module('sentinelApp', ['ngRoute'])
                 }]
             }
         }).when('/showUser/:userId', {
-            templateUrl: '/ui/show-user.html',
+            templateUrl: '/web/show-user.html',
             controller: 'SentinelCtrl as ctrl',
             resolve: {
                 async: ['SentinelService', '$route', '$log', function(apiService, $route, $log) {
@@ -23,7 +23,7 @@ angular.module('sentinelApp', ['ngRoute'])
                 }]
             }
         }).when('/createUser', {
-            templateUrl: '/ui/create-user.html',
+            templateUrl: '/web/create-user.html',
             controller: 'SentinelCtrl as ctrl'
         });
         $routeProvider.otherwise({
