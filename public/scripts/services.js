@@ -32,7 +32,7 @@ angular.module('sentinelApp')
                 getUsers: function() {
                     var config = {
                         method: 'GET',
-                        url: '/user',
+                        url: '/api/v1/user',
                         headers: headers('fake-user')
                     };
                     return $http(config).success(function (response) {
@@ -42,7 +42,7 @@ angular.module('sentinelApp')
                 getUser: function(userId) {
                     var config = {
                         method: 'GET',
-                        url: '/user/' + userId,
+                        url: '/api/v1/user/' + userId,
                         headers: headers('fake-user')
                     };
                     return $http(config).success(function(user) {
@@ -55,7 +55,7 @@ angular.module('sentinelApp')
                 createUser: function(user) {
                     var config = {
                         method: 'POST',
-                        url: '/user',
+                        url: '/api/v1/user',
                         headers: headers('fake-user'),
                         data: user
                     };

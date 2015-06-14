@@ -1,0 +1,11 @@
+[
+    {
+        "first": "Admin",
+        "last": "User",
+        "active": true,
+        "credentials": {
+                "username": "admin@alertavert.com",
+                "password": "zekret"
+        }
+    }
+]
