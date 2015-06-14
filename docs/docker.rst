@@ -19,13 +19,23 @@ this exposes port `27017` so we can connect directly to it.
 API Server (sbt)
 ----------------
 
+TODO: all this must be automated, like in build-web-proxy.py (see #96950418)
+
 This is done via the ``sentinel.Dockerfile`` docker build.
 
-To use this Dockerfile, you must first run `sbt docker:stage`
-then copy that file into ``target/docker``, renaming it ``Dockerfile``::
+To use this Dockerfile, you must first copy the ``override.conf`` into the ``conf/`` directory::
 
-    $ rm target/docker/Dockerfile
+    $ cp build/override.conf conf/
+
+(this seems to be a limitation in the sbt docker plugin) then run::
+
+    $ sbt docker:stage
+
+The ``Dockerfile`` this generates is all wrong, instead use the one in ``build/``::
+
     $ cp build/sentinel.Dockerfile target/docker/Dockerfile
+
+**NOTE** Remember to remove ``override.conf`` from the ``conf/`` directory, or unit tests will fail.
 
 Build the docker image::
 
@@ -33,9 +43,10 @@ Build the docker image::
 
 and then run the container::
 
-    $ docker run -p 80:9000 -d massenz/sentinel
+    $ docker run --name sentinel-app -p 9000:9000 -d massenz/sentinel
 
-The REST API will be exposed on the docker host on port 80 (default HTTP).
+The REST API will be exposed on the docker host on port 9000 (if you change this,
+remember to update the Nginx proxy configuration).
 
 
 NGINX Docker configuration

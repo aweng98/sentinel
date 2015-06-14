@@ -6,5 +6,5 @@
 # To use this Dockerfile, use build-web-proxy.py
 
 FROM nginx
-ADD sentinel-webui.tar.gz /usr/share/nginx/html
+ADD sentinel-webui.tar.gz /usr/share/nginx/html/web
 COPY nginx.conf /etc/nginx/nginx.conf

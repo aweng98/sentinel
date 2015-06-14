@@ -16,8 +16,7 @@
 FROM java:8
 MAINTAINER Marco Massenzio <marco@alertavert.com>
 ADD files /
-COPY files/opt/docker/bin/bootstrap.json /etc/sentinel/bootstrap.json
-COPY files/opt/docker/bin/override.conf files/opt/docker/conf/
+COPY files/opt/docker/conf/bootstrap.json /etc/sentinel/bootstrap.json
 WORKDIR /opt/docker
 RUN ["chown", "-R", "daemon", "."]
 USER daemon
