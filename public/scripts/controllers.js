@@ -13,21 +13,21 @@ angular.module('sentinelApp')
             self.userData = SentinelService.userData;
 
             self.login = function () {
-                $log.info("Logging in " + self.user.username);
+                self.loginFailed = false;
                 self.errMsg = null;
+
+                $log.info("Logging in " + self.user.username);
                 UserService.login(self.user).then(function () {
                     self.user = UserService.user;
-                    $log.debug("Logged in: " + self.user.username);
-                    self.errMsg = null;
                     $location.path('/listUsers');
                 }, function (error) {
-                    if (error.status === 401) {
-                        $log.error("Cannot authenticate " + self.user.username);
-                    } else {
+                    self.errMsg = "Cannot authenticate " + self.user.username;
+                    self.loginFailed = true;
+                    self.user.password = null;
+                    if (error.status != 401) {
                         $log.error("Error (" + error.data.error + ") encountered while logging in user "
                             + self.user.username);
                     }
-                    self.errMsg = error.data.error;
                 });
             };
 
