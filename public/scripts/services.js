@@ -29,6 +29,7 @@ angular.module('sentinelApp')
             var service = {
                 users: [],
                 userData: null,
+                orgs: [],
                 getUsers: function() {
                     var config = {
                         method: 'GET',
@@ -61,6 +62,30 @@ angular.module('sentinelApp')
                     };
                     return $http(config).success(function(response) {
                         console.log('User ' + response.credentials.username + ' created [' + response.id + ']');
+                        return response;
+                    });
+                },
+                getOrgs: function() {
+                    console.log('Getting orgs for ' + usrSvc.user.username);
+                    var config = {
+                        method: 'GET',
+                        url: '/api/v1/org',
+                        headers: headers('fake-user'),
+                    };
+                    return $http(config).success(function(response) {
+                        service.orgs = response;
+                    });
+                },
+                createOrg: function(org) {
+                    console.log("creating org: " + org.name);
+                    var config = {
+                        method: 'POST',
+                        url: '/api/v1/org',
+                        headers: headers(usrSvc.user.username),
+                        data: org
+                    };
+                    return $http(config).success(function(response) {
+                        console.log('Org ' + response.name + ' created [' + response.id + ']');
                         return response;
                     });
                 }

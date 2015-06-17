@@ -33,12 +33,12 @@
                 <li><a href="#about">About</a></li>
                 <li><a href="#contact">Contact</a></li>
                 <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"
+                    <a href="" class="dropdown-toggle" data-toggle="dropdown"
                        role="button" aria-expanded="false">Actions... <span class="caret"></span></a>
                     <ul class="dropdown-menu" role="menu">
                         <li><a href="#/listUsers">List users</a></li>
                         <li><a href="#/createUser">New User...</a></li>
-                        <li><a href="#">Change Organization</a></li>
+                        <li><a href="#/listOrgs">Change Organization</a></li>
                         <li class="divider"></li>
                         <li><a href="#" ng-click="ctrl.logout()">Logout</a></li>
                     </ul>
@@ -88,20 +88,20 @@
     <div ng-view>
         <!-- Here go the routing elements -->
     </div>
-    <div class="row">
-        <p class="col-md-offset-1 col-md-2">
-            <button type="button"
-                    ng-click="ctrl.path('/createUser');" class="btn btn-xs btn-primary">Create user</button>
-            <button type="button"
-                    ng-click="ctrl.path('/showUser/' + ctrl.user.id);" class="btn btn-xs btn-primary">User Account</button>
-        </p>
-        <p class="col-md-offset-1 col-md-1">
-        <button type="button"
-                    ng-click="ctrl.path('/listUsers');" class="btn btn-xs btn-default">Back</button>
-        </p>
+</div>
 
+<div class="col-sm-offset-1 col-sm-6">
+    <div class="panel panel-info">
+        <div class="panel-heading">
+            <h3 class="panel-title">Debug Info</h3>
+        </div>
+        <div class="panel-body">
+            Logged in: {{ ctrl.userService.isLoggedIn }}, User: {{ ctrl.user.username }}
+        </div>
     </div>
 </div>
+
+
 
 <!-- Loading the main AngularJS library
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.19/angular.js"></script>

@@ -3,25 +3,24 @@
   ~ Commercial use or modification of this software without a valid license is expressly forbidden
   -->
 
-<div class="page-header"><h1>Users</h1></div>
+<div class="page-header"><h1>Organizations</h1></div>
 <div class="row">
     <div class="col-md-10 col-md-offset-1">
         <div class="table-responsive">
             <table class="table table-striped">
                 <thead>
+                <!-- TODO: change style for inactive ones -->
                 <tr>
-                    <th class="col-md-3">Username</th>
-                    <th class="col-md-2">First Name</th>
-                    <th class="col-md-2">Last Name</th>
-                    <th class="col-md-3">Last login</th>
+                    <th class="col-md-2">Organization</th>
+                    <th class="col-md-2">Created By</th>
+                    <th class="col-md-3">On</th>
                 </tr>
                 </thead>
                 <tbody>
-                <tr ng-repeat="user in ctrl.users">
-                    <td><a href="#/showUser/{{user.id}}">{{ user.credentials.username }}</a></td>
-                    <td>{{ user.first_name }}</td>
-                    <td>{{ user.last_name }}</td>
-                    <td>{{ user.last_seen }}</td>
+                <tr ng-repeat="org in ctrl.orgs">
+                    <td><a href="#/showOrg/{{org.id}}">{{ org.name }}</a></td>
+                    <td><a href="#/showUser/{{org.creator.id}}">{{ org.creator.credentials.username }}</a></td>
+                    <td>{{ org.created }}</td>
                 </tr>
                 </tbody>
             </table>
@@ -34,6 +33,6 @@
 <div class="row">
     <div class="col-md-offset-9 col-md-2">
         <button type="button"
-                ng-click="ctrl.path('/createUser');" class="btn btn-xs btn-primary">New user...</button>
+                ng-click="ctrl.path('/createOrg');" class="btn btn-xs btn-primary">New Organization...</button>
     </div>
 </div>

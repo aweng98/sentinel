@@ -10,6 +10,7 @@ angular.module('sentinelApp')
             self.header = "Sentinel Users";
             self.heading = "h3";
             self.users = SentinelService.users;
+            self.orgs = SentinelService.orgs;
             self.userData = SentinelService.userData;
 
             self.login = function () {
@@ -51,6 +52,16 @@ angular.module('sentinelApp')
                 })
             };
 
+            self.getOrgs = function () {
+                SentinelService.getOrgs().error(function (errResponse) {
+                    $log.error("Could not retrieve Organizations: " + errResponse);
+                    self.errMsg = errResponse;
+                }).success(function() {
+                    console.log("wooooooo");
+                    self.orgs = SentinelService.orgs;
+                })
+            };
+
             self.getUser = function (userId) {
                 SentinelService.getUser(userId).success(function () {
                     self.userData = SentinelService.userData;
@@ -89,5 +100,17 @@ angular.module('sentinelApp')
 
             self.path = function(newPath) {
                 $location.path(newPath);
-            }
+            };
+
+            self.createOrg = function(org) {
+                $log.info("Creating new org: " + org.name + ", for: " + self.user.username);
+                SentinelService.createOrg(org).error(function(errResponse) {
+                    $log.error("Could not create Organization " + org.name + ": " +
+                        errResponse);
+                    self.errMsg = errResponse;
+                }).success(function() {
+                    $log.info("Organization created: " + org.name);
+                    $location.path("/listOrgs")
+                })
+            };
         }]);
