@@ -31,3 +31,6 @@ conf/override.conf
 # Contains private token
 coveralls.sh
 
+# Node.js and Jasmine modules
+node_modules/
+

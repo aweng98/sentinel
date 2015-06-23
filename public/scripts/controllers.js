@@ -16,7 +16,6 @@ angular.module('sentinelApp')
             self.login = function () {
                 self.loginFailed = false;
                 self.errMsg = null;
-
                 $log.info("Logging in " + self.user.username);
                 UserService.login(self.user).then(function () {
                     self.user = UserService.user;
