@@ -8,9 +8,6 @@ Sentinel - API-driven User Management SaaS
 .. image:: https://coveralls.io/repos/massenz/sentinel/badge.png?branch=develop
   :target: https://coveralls.io/r/massenz/sentinel?branch=develop
 
-.. image:: https://go-shields.herokuapp.com/license-apache2-blue.png
-
-  
 :Author: Marco Massenzio (marco@alertavert.com)
 :Version: 0.2
 :Last Updated: 2014-09-28
@@ -53,7 +50,7 @@ and a link to this project would be appreciated, but not required).
 
 Please include the following alongside your source code::
 
-    // Code inspired by Sentinel Project:
-    // See: http://github.com/massenz/sentinel
+    // Copyright (c) 2015 Marco Massenzio,all rights reserved.
+    // Please see: http://github.com/massenz/sentinel
 
 .. _Pivotal Tracker's Sentinel: https://www.pivotaltracker.com/n/projects/1082840
