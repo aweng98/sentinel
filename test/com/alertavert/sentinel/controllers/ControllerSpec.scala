@@ -3,6 +3,7 @@
 
 package com.alertavert.sentinel.controllers
 
+import com.alertavert.sentinel.errors.DbException
 import com.alertavert.sentinel.model.{Resource, Organization, User}
 import com.alertavert.sentinel.persistence.DataAccessManager
 import com.alertavert.sentinel.persistence.mongodb.{MongoResourceDao, MongoOrganizationDao, MongoUserDao, UserOrgsAssocDao}
@@ -17,6 +18,7 @@ import play.api.mvc.{Controller, Results}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
+import scala.sys.SystemProperties
 import scala.util.Random
 
 /**
@@ -29,6 +31,15 @@ import scala.util.Random
  */
 class ControllerSpec extends PlaySpec with Results with OneAppPerSuite with BeforeAndAfterAll
     with BeforeAndAfter {
+
+  // The db_uri for the tests must be configured via a Java property:
+  // sbt test -Dsentinel.test.db_uri="mongodb://my.server:99999/foobar"
+  final val DB_URI_PROPERTY = "sentinel.test.db_uri"
+
+  val sp = new SystemProperties
+  val dbUri = sp.getOrElse(DB_URI_PROPERTY, throw new DbException(s"Java System property $DB_URI_PROPERTY not defined"))
+
+  if (! DataAccessManager.isReady) DataAccessManager.init(dbUri)
 
   var testController: Controller with ApiController = _
 

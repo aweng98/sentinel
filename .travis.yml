@@ -1,21 +1,21 @@
 # Travis build, created 2014-1-16
 
+sudo: required
+dist: trusty
+
+services:
+  - docker
+
 language: scala
 scala:
     - "2.11.1"
 
 before_install:
-  - sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
-  - echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' | sudo tee /etc/apt/sources.list.d/mongodb.list
-  - sudo apt-get update -qq
-  - sudo apt-get install -y mongodb-org-server
-
-# Looks like the service gets started upon install
-#  - sudo service mongod start
+  - docker run --name mongod -d -p 27017:27017 mongo
 
 # Running test coverage against scoverage:
 # Disabled because of a bug in sbt-coveralls
 # see: https://github.com/scoverage/sbt-coveralls/issues/28
 #script: "sbt coverage test coveralls"
 
-script: sbt coverage test coverageAggregate -Dsentinel.test.db_uri="mongodb://localhost:27017/sentinel-test"
+script: sbt coverage test coverageAggregate -Dsentinel.test.db_uri="mongodb://127.0.0.1:27017/sentinel-test"

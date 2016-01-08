@@ -34,14 +34,18 @@ trait AppController   {
 
     /** Approximate time this server started */
     val serverStartedAt = DateTime.now
+
+    /** A date formatter, to emit timestamps in ISO format, without millisecond precision. */
     val dateFmt = ISODateTimeFormat.dateTimeNoMillis()
 
-    Logger.info(s"Application Controller started at $dateFmt")
+    Logger.info(s"Application Controller started at ${dateFmt.print(serverStartedAt)}")
 
     def initialize(): Unit = {
-      Logger.info("Initializing application; bootstrapping user DB")
-      Logger.debug(s"Bootstrapping from ${configuration.getBootstrapFilepath}")
-      val json = Source.fromFile(configuration.getBootstrapFilepath).getLines().mkString
+      val bootstrapFile = configuration.getBootstrapFilepath
+      // TODO(marco): verify that file exists
+
+      Logger.info(s"Initializing application; bootstrapping user DB from $bootstrapFile")
+      val json = Source.fromFile(bootstrapFile).getLines().mkString
       val users = Json.parse(json).as[List[Map[String, JsValue]]]
       try {
         users.foreach(insertUser(_))

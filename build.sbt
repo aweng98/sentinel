@@ -12,6 +12,9 @@ organization := "AlertAvert.com"
 
 scalacOptions ++= Seq("-deprecation", "-feature", "-language:postfixOps")
 
+fork in Test := false
+
+
 // Code coverage and support for coveralls.io
 // See: https://github.com/scoverage/sbt-scoverage
 coverageExcludedPackages := "<empty>;controllers\\..*Reverse.*;"

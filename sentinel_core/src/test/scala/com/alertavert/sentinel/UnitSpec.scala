@@ -3,6 +3,7 @@
 
 package com.alertavert.sentinel
 
+import com.alertavert.sentinel.errors.DbException
 import com.alertavert.sentinel.persistence.mongodb.MongoUserDao
 import com.alertavert.sentinel.security.Credentials
 import org.scalatest._
@@ -13,13 +14,12 @@ import scala.sys.SystemProperties
 abstract class UnitSpec[T] extends FlatSpec with Matchers with OptionValues with
     Inside with Inspectors with BeforeAndAfter {
 
-  // TODO(marco): the db_uri for the tests should be configured in an external test configuration file.
-  // Currently, it uses the Java property (-Dsentinel.test.db_uri="mongodb://my.server:99999/foobar") - this is brittle.
-  final val TEST_DB_URI = "mongodb://dockerdev/sentinel-test"
+  // The db_uri for the tests must be configured via a Java property:
+  // sbt test -Dsentinel.test.db_uri="mongodb://my.server:99999/foobar"
   final val DB_URI_PROPERTY = "sentinel.test.db_uri"
 
   val sp = new SystemProperties
-  val dbUri = sp.getOrElse(DB_URI_PROPERTY, TEST_DB_URI)
+  val dbUri = sp.getOrElse(DB_URI_PROPERTY, throw new DbException(s"Java System property $DB_URI_PROPERTY not defined"))
 
   if (! DataAccessManager.isReady) DataAccessManager.init(dbUri)
 
