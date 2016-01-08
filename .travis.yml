@@ -18,4 +18,5 @@ before_install:
 # see: https://github.com/scoverage/sbt-coveralls/issues/28
 #script: "sbt coverage test coveralls"
 
-script: sbt coverage test coverageAggregate -Dsentinel.test.db_uri="mongodb://127.0.0.1:27017/sentinel-test"
+# TODO(marco): replace this call with running our own test runner (./bin/run_tests.sh)
+script: sbt coverage test coverageAggregate -Dsentinel.test.db_uri="mongodb://localhost/sentinel-test"

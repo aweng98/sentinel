@@ -12,8 +12,9 @@ organization := "AlertAvert.com"
 
 scalacOptions ++= Seq("-deprecation", "-feature", "-language:postfixOps")
 
+// This is necessary to avoid failures due to sbt not propagating system properties.
+// See: http://stackoverflow.com/questions/10155870/setting-system-properties-with-sbt-run
 fork in Test := false
-
 
 // Code coverage and support for coveralls.io
 // See: https://github.com/scoverage/sbt-scoverage
