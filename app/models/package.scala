@@ -151,8 +151,13 @@ package object security {
   def Authenticated[A](p: BodyParser[A])(f: AuthenticatedRequest[A] => Result) = {
     Action(p) { request =>
         try {
-          val user = validateHash(request).getOrElse(throw new AuthenticationError(
-            "Cannot authenticate request"))
+          logger.debug("Authenticating request")
+          val user = validateApiKey(request) match {
+            case Some(u) => u
+            case None => logger.error(s"Cannot authenticate request for Authorization: ${
+                                        request.headers.get("Authorization").getOrElse("empty")}")
+              throw new AuthenticationError("Cannot authenticate request")
+          }
           f(AuthenticatedRequest(user, request))
         } catch {
           case ex: AuthenticationError => Results.Unauthorized(ex.getLocalizedMessage)
@@ -162,13 +167,28 @@ package object security {
     }
   }
 
+  /**
+   * Authenticates the request, by comparing the passed in API key with the one stored in the database for the user.
+   *
+   * The `user` is validated against the database and its API key retrieved: the value is compared lexicographically
+   * against the one passed in the `Authorization` header:
+   *
+   * <pre>Authorization: username=auser;api-key=abcde....00987</pre>
+   *
+   * If the username does not exist, or the API key does not match, or either value is missing, an
+   * [[AuthenticationError]] is thrown.
+   *
+   * This check can be disabled by setting the `application.signature.validate` key to `false` in the
+   * `conf/application.conf` file (this is <strong>strongly discouraged</strong> in production.
+   *
+   * @param request the request to validate; its `Authorization` header will be used only.
+   * @return the actual [[User]] objects that maps to the `username` passed in to the `Authorization` header, if it
+   *         exists and the keys match.
+   *
+   * @throws AuthenticationError if any of the above is missing or the keys don't match.
+   */
   // TODO: the returned errors disclose too much information; replace with generic errors in Prod
-  def validateHash[A](request: Request[A]): Option[User] = {
-
-    val date = request.headers.get("x-date").getOrElse(
-      throw new AuthenticationError("Missing `x-date` header"))
-    // TODO: verify that the Date this request is signed with is not a replay attack
-    logger.debug(s"Request sent at $date")
+  def validateApiKey[A](request: Request[A]): Option[User] = {
 
     // Extract the value pairs from the Auth header: username=foo;hash=xYzaa99==
     val auth = request.headers.get("Authorization").getOrElse(
@@ -179,24 +199,21 @@ package object security {
     val username = values.getOrElse("username",
       throw new AuthenticationError("`username` key missing in Authorization header"))
 
+    // TODO(marco): cache valid usernames in an in-memory store (eg, Redis).
     val maybeUser = UsersResource.getUserByUsername(username)
     if (AppController.configuration.shouldValidate) {
-      val hash = values.getOrElse("hash",
-          throw new AuthenticationError("`hash` key missing in Authorization header"))
+      val apiKeySent = values.getOrElse("api-key",
+          throw new AuthenticationError("API key missing in Authorization header (`api-key`)"))
       val user = maybeUser.getOrElse(
           throw new AuthenticationError(s"$username is not a valid username"))
+
+      // TODO(marco): cache the API key value in a memory store (eg, using Redis).
       val apiKey = user.getCredentials.apiKey
 
-      val computedHash = encode(hashStrings(List(
-        apiKey,
-        date,
-        request.path,
-        request.body.toString
-      )))
-      logger.debug(s"Computed hash: $computedHash")
-      if (computedHash == hash) Some(user) else None
+      if (apiKey == apiKeySent) Some(user) else throw new AuthenticationError("API Key does not match user key")
     } else {
-      logger.warn("Bypassing API signature check")
+      logger.warn("Bypassing API Key check")
+      // TODO(marco): remove the `madeUpUser` which is for now only useful until we have better testing infrastructure.
       Some(maybeUser.getOrElse(madeUpUser(username)))
     }
   }

@@ -3,6 +3,8 @@
 
 package controllers
 
+import java.lang.String
+
 import com.alertavert.sentinel.model.User
 import com.alertavert.sentinel.persistence.mongodb.MongoUserDao
 import com.alertavert.sentinel.security.Credentials
@@ -34,7 +36,7 @@ trait AppController   {
     val serverStartedAt = DateTime.now
     val dateFmt = ISODateTimeFormat.dateTimeNoMillis()
 
-    Logger.info("Application Controller started")
+    Logger.info(s"Application Controller started at $dateFmt")
 
     def initialize(): Unit = {
       Logger.info("Initializing application; bootstrapping user DB")
@@ -133,47 +135,36 @@ trait AppController   {
     object configuration {
 
       val SIGN_VALIDATE_KEY = "application.signature.validate"
-      val DATE_VALIDATE_THRESHOLD_SEC_KEY = "application.signature.threshold_sec"
       val DB_URI_KEY = "db_uri"
       val BOOTSTRAP_FILE = "application.bootstrap.file"
 
       def toMap: Map[String, String] = Map(
         SIGN_VALIDATE_KEY -> s"$shouldValidate",
-        DATE_VALIDATE_THRESHOLD_SEC_KEY -> s"$validationThresholdSec",
         DB_URI_KEY -> dbUri,
         BOOTSTRAP_FILE -> s"$bootstrapFilepath"
       )
 
 
-      private val shouldValidateSignature =
-        Play.application.configuration.getBoolean(SIGN_VALIDATE_KEY)
+      private val shouldValidateSignature: Boolean =
+        Play.application.configuration.getBoolean(SIGN_VALIDATE_KEY) match {
+          case null => true
+          case x => x
+        }
 
-      private val dateValidationThresholdSec =
-        Play.application.configuration.getInt(DATE_VALIDATE_THRESHOLD_SEC_KEY)
 
       private val bootstrapFilepath =
         Play.application.configuration.getString(BOOTSTRAP_FILE)
 
       /**
        * Whether each request should be validated against the user's API Key.
-       * Set by the `application.signature.validate` config value
+       * Set by the `application.signature.validate` configuration value in `application.conf`.
+       *
+       * If not present, assumes by default `true` (most secure).
        *
        * @return the boolean configuration value
        * @see [[SIGN_VALIDATE_KEY]]
        */
       def shouldValidate = shouldValidateSignature
-
-      /**
-       * When validating signed requests, the `Date:` header will be part of the signature and will
-       * be validated against the server's current (UTC) time to be not older than
-       * [[validationThresholdSec]] seconds.
-       *
-       * This is controlled by the `application.signature.threshold_sec` configuration value.
-       *
-       * @return the seconds that can be at most passed since this requests was signed
-       * @see [[DATE_VALIDATE_THRESHOLD_SEC_KEY]]
-       */
-      def validationThresholdSec = dateValidationThresholdSec
 
 
       /**

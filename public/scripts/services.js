@@ -7,22 +7,15 @@ angular.module('sentinelApp')
     .factory('SentinelService', ['$http', 'UserService', '$log',
         function($http, usrSvc, $log) {
 
-            // TODO: implement signature API
-            var hash = function(apiKey) {
-                return "FIXME::signed-with-" + apiKey;
-            };
-
             var headers = function() {
                 if (! usrSvc.isLoggedIn) {
-                    $log.error("User is not logged in cannot validate request");
-                    return null;
+                    $log.error("User is not logged in; Authorization header cannot be added to the request");
+                    return {};
                 }
                 var username = usrSvc.user.username;
                 var apiKey = usrSvc.user.apiKey;
                 return {
-                    'x-date': new Date(),
-                    // FIXME: we will need to pass the request URL / content for proper signing
-                    'Authorization': "username=" + username + ";hash=" + hash(apiKey)
+                    'Authorization': "username=" + username + ";api-key=" + apiKey
                 };
             };
 
@@ -34,7 +27,7 @@ angular.module('sentinelApp')
                     var config = {
                         method: 'GET',
                         url: '/api/v1/user',
-                        headers: headers('fake-user')
+                        headers: headers()
                     };
                     return $http(config).success(function (response) {
                         service.users = response;
@@ -44,7 +37,7 @@ angular.module('sentinelApp')
                     var config = {
                         method: 'GET',
                         url: '/api/v1/user/' + userId,
-                        headers: headers('fake-user')
+                        headers: headers()
                     };
                     return $http(config).success(function(user) {
                         service.userData = user;
@@ -57,7 +50,7 @@ angular.module('sentinelApp')
                     var config = {
                         method: 'POST',
                         url: '/api/v1/user',
-                        headers: headers('fake-user'),
+                        headers: headers(),
                         data: user
                     };
                     return $http(config).success(function(response) {
@@ -70,7 +63,7 @@ angular.module('sentinelApp')
                     var config = {
                         method: 'GET',
                         url: '/api/v1/org',
-                        headers: headers('fake-user'),
+                        headers: headers()
                     };
                     return $http(config).success(function(response) {
                         service.orgs = response;
@@ -81,7 +74,7 @@ angular.module('sentinelApp')
                     var config = {
                         method: 'POST',
                         url: '/api/v1/org',
-                        headers: headers(usrSvc.user.username),
+                        headers: headers(),
                         data: org
                     };
                     return $http(config).success(function(response) {

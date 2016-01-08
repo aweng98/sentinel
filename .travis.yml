@@ -17,5 +17,5 @@ before_install:
 # Disabled because of a bug in sbt-coveralls
 # see: https://github.com/scoverage/sbt-coveralls/issues/28
 #script: "sbt coverage test coveralls"
-script: sbt coverage test coverageAggregate
 
+script: sbt coverage test coverageAggregate -Dsentinel.test.db_uri="mongodb://localhost:27017/sentinel-test"
