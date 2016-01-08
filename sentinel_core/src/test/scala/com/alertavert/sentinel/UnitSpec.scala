@@ -8,10 +8,20 @@ import com.alertavert.sentinel.security.Credentials
 import org.scalatest._
 import com.alertavert.sentinel.persistence.DataAccessManager
 
+import scala.sys.SystemProperties
+
 abstract class UnitSpec[T] extends FlatSpec with Matchers with OptionValues with
     Inside with Inspectors with BeforeAndAfter {
 
-  if (! DataAccessManager.isReady) DataAccessManager.init("mongodb://localhost:27017/sentinel-test")
+  // TODO(marco): the db_uri for the tests should be configured in an external test configuration file.
+  // Currently, it uses the Java property (-Dsentinel.test.db_uri="mongodb://my.server:99999/foobar") - this is brittle.
+  final val TEST_DB_URI = "mongodb://dockerdev/sentinel-test"
+  final val DB_URI_PROPERTY = "sentinel.test.db_uri"
+
+  val sp = new SystemProperties
+  val dbUri = sp.getOrElse(DB_URI_PROPERTY, TEST_DB_URI)
+
+  if (! DataAccessManager.isReady) DataAccessManager.init(dbUri)
 
   def getNewCreds: Credentials = {
     val suffix = Math.round(1000 * Math.random()) toString

@@ -20,7 +20,7 @@ class DataAccessManagerTest extends UnitSpec {
 
   it should "throw if we try to initialize again" in {
     intercept[DbException] {
-      DataAccessManager.init("mongodb://localhost:27017/test")
+      DataAccessManager.init("mongodb://fake.server/dummy-db")
     }
   }
 }
