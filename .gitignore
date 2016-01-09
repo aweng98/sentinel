@@ -27,6 +27,10 @@ tmp
 # Local application config override
 conf/override.conf
 
+# Generated SSL Cert / Key - see README
+nginx.crt
+nginx.key
+
 # Coveralls script - DO NOT UPLOAD
 # Contains private token
 coveralls.sh

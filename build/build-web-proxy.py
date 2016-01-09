@@ -11,13 +11,12 @@ It will require the following:
 - a Dockerfile, named by default ``build/web-ui.Dockerfile`` (change this with
   --dockerfile)
 
-- a Web UI static files folder, by default ``public`` (change this
+- a folder containing the Web UI static files, by default ``public`` (change this
   with --public)
 
 - the NGINX configuration file (by default ``build/nginx.conf, change with --config)
 
 Run this script from ``Sentinel`` project root directory, and it should "just work."
-
 """
 
 __author__ = 'Marco Massenzio'
@@ -58,40 +57,46 @@ def main(cfg):
     dockerfile = cfg.dockerfile
     pub_dir = cfg.public
     nginx_conf = cfg.config
-    logging.info("Creating Dockerfile from template {}".format(dockerfile))
+
     logging.info("Copying all static file to Nginx container from `{}` folder".format(pub_dir))
     if not os.path.exists(pub_dir):
         logging.error("Static files directory {} does not exist, aborting.".format(
             os.path.abspath(pub_dir)))
         exit(1)
+
+    logging.info("Creating Dockerfile from template {}".format(dockerfile))
     if not os.path.exists(dockerfile):
         logging.error("Template {} does not exist, aborting.".format(dockerfile))
         exit(1)
 
     workdir = tempfile.mkdtemp()
-    logging.debug("Created temporary directory {}".format(workdir))
+    logging.info("Created temporary directory {}".format(workdir))
     tarfile = os.path.join(workdir, 'sentinel-webui.tar.gz')
     tar("caf", tarfile, '-C', pub_dir, '--exclude-tag-all=NO_EXPORT', '.')
-    logging.debug("Compressed all public static files to {}".format(tarfile))
-    if os.path.exists(nginx_conf):
-        cp(nginx_conf, workdir)
-        logging.debug("Copied ngnix configuration file {} to {}".format(
-            nginx_conf, os.path.join(workdir, nginx_conf)
-        ))
+    logging.info("Compressed all public static files to {}".format(tarfile))
+
+    # TODO(marco): fix the hard-coded file names
+    nginx_files = [nginx_conf, 'build/nginx.crt', 'build/nginx.key']
+    for nf in nginx_files:
+        if os.path.exists(nf):
+            cp(nf, workdir)
+            logging.info("Copied ngnix configuration file {} to {}".format(
+                nf, os.path.join(workdir, nginx_conf)
+            ))
     logging.info("Building docker image...")
     cp(dockerfile, os.path.join(workdir, 'Dockerfile'))
     try:
         dout = docker('build', '-t', DOCKER_IMAGE, workdir)
+        logging.info(dout)
     except ErrorReturnCode as ex:
         logging.error(ex)
         logging.error("Failed to generate the Docker image")
         exit(1)
     # TODO: parse stdout to extract the actual image name
-    logging.debug(dout)
     logging.info("Successfully built Docker image `{}` for Sentinel Web UI".format(
         DOCKER_IMAGE))
     logging.info("You can now start the container using "
-                 "`docker run --name sentinel-web -d -p 80:80 sentinel-nginx`")
+                 "`docker run --name sentinel-web -d -p 8080:80 sentinel-nginx`")
     logging.info("Docker image build complete.")
 
 
