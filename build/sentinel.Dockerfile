@@ -16,6 +16,12 @@
 FROM java:8
 MAINTAINER Marco Massenzio <marco@alertavert.com>
 
+# Just a convenience for when entering the shell to debug
+# the container
+RUN alias ll="ls -l"
+RUN alias la="ls -lAh"
+RUN apt-get update && apt-get install -y vim
+
 # TODO: pick the VERSION ENV var from the build
 ENV VERSION="0.3" SENTINEL_BASE="/opt/sentinel" SENTINEL_CONF="/etc/sentinel"
 
@@ -28,6 +34,7 @@ COPY files/opt/docker/conf /etc/sentinel
 
 WORKDIR /opt/sentinel
 
+RUN ["chown", "-R", "daemon", "/etc/sentinel"]
 RUN ["chown", "-R", "daemon", "."]
 USER daemon
 

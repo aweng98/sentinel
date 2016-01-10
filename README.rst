@@ -10,7 +10,7 @@ Sentinel - API-driven User Management SaaS
 
 :Author: Marco Massenzio (marco@alertavert.com)
 :Version: 0.3
-:Last Updated: 2016-01-08
+:Last Updated: 2016-01-09
 
 
 
@@ -26,7 +26,7 @@ Design goals (in decreasing importance order):
 - REST-based, and easy to use;
 - Easy to deploy in a SaaS model;
 - Secure from unauthorized access;
-- Simple to deploy in a modern[2] on-premise installation.
+- Simple to deploy in a modern[2]_ on-premise installation.
 
 
 User Stories
@@ -108,7 +108,7 @@ In any event, this gives access to a ``mongod`` on ``localhost:27017`` (the defa
 API Server (Sentinel)
 +++++++++++++++++++++
 
-This is slightly more convoluted, mostly due to the use of ``sbt docker`` plugin, which is
+This is slightly more convoluted, mostly due to the use of `sbt docker plugin`_, which is
 not very well documented and has several limitations[1]_.
 
 **TODO** Create a script to automate the below
@@ -193,7 +193,11 @@ Currently the main configuration is managed via two files::
 the latter *must* be moved to the ``conf/`` dir prior to building the docker image (see Deployment_) for its settings
 to be picked up.
 
-**TODO** support runtime changes via restart, using config files in ``/etc/sentinel``
+In the built container, they will be placed in the ``/etc/sentinel`` folder, which is also
+added to the ``CLASSPATH``, so changes to those files will be picked up upon server restart.
+
+**NOTE** copies are also kept in ``/opt/sentinel/conf``, but changes to those will not be
+reflected in the running server.
 
 The main flags of interest (see the ``application.conf`` file for more details) are::
 
@@ -225,6 +229,20 @@ db_uri
   better, the ``run_tests`` script: see `Build & Test`_).
 
 
+Overrride
++++++++++
+
+The preferred way of making changes to the configuration (both during development and in production)
+would be to make changes to the ``overrride.conf`` file and leave the ``application.conf`` file
+alone.
+
+The file should be placed in the ``conf/`` folder (alongside the ``application.conf``) and will
+be picked up when the server start: as it's included as the last line in the configuration
+file, any keys that are redefined there will supersede the values in the ``application.conf``.
+
+See the example in ``override.conf.sample`` -- keep ``override.conf`` outside of source control.
+
+
 API Key
 +++++++
 
@@ -239,9 +257,13 @@ subsequently used for all requests by the same user.
 
 **Notes**
 
-.. [1]: Assumes Linux OS, support for Docker and service discovery/routability.
+.. [1] Assumes Linux OS, support for Docker and service discovery/routability.
 
-.. [2]: TODO: Document shortcomings of ``sbt docker:stage``
+.. [2] See the ``sentinel.Dockerfile`` for a list of the necessary changes to make the
+       container runnable; also, the ``bin/fix_bin.py`` script provides an example of the
+       changes necessary to make the configuration files available in the ``CLASSPATH`` in
+       such a way that does not require to rebuild it from scratch every time a configuration
+       change is necessary (that would be unworkable in deployment).
 
 
 .. _Pivotal Tracker's Sentinel: https://www.pivotaltracker.com/n/projects/1082840
@@ -255,5 +277,6 @@ subsequently used for all requests by the same user.
 
 .. _Scala Play: https://www.playframework.com
 .. _Casbah: https://mongodb.github.io/casbah/
+.. _sbt docker plugin: http://www.scala-sbt.org/sbt-native-packager/formats/docker.html
 
 .. _API Docs: TODO
