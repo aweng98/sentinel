@@ -5,7 +5,11 @@ import play.api.Play
 
 class ApplicationSpec extends PlaySpec with OneAppPerSuite {
  "The OneAppPerSuite trait" must {
-    "provide a FakeApplication" in {
+    "start the FakeApplication" in {
+      Play.maybeApplication mustBe Some(app)
+    }
+
+    "find a valid configuration" in {
       app.configuration.getString("application.test.guard") mustBe Some("found")
     }
 
@@ -16,9 +20,5 @@ class ApplicationSpec extends PlaySpec with OneAppPerSuite {
         case Some(s) => s.startsWith("mongodb://")
       }
     }
-    "start the FakeApplication" in {
-      Play.maybeApplication mustBe Some(app)
-    }
   }
-
 }

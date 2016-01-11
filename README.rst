@@ -10,16 +10,14 @@ Sentinel - API-driven User Management SaaS
 
 :Author: Marco Massenzio (marco@alertavert.com)
 :Version: 0.3
-:Last Updated: 2016-01-09
-
-
+:Last Updated: 2016-01-10
 
 
 Goals
 -----
 
-Implement a very easy-to-use, yet secure API-driven service to enable application developers to manage user access
-and permission management for their mobile and online web applications.
+Implement a very easy-to-use, yet secure API-driven service to enable application developers to
+manage user access and permission management for their mobile and online web applications.
 
 Design goals (in decreasing importance order):
 
@@ -55,12 +53,60 @@ Please include the following alongside your source code::
 Architecture
 ------------
 
-::
-
-    TODO - Architecture diagram
-
-Uses the `Scala Play`_ framework for the REST API, and core Scala for the backend implementation;
+We use the `Scala Play`_ framework for the REST API, and core Scala for the backend implementation;
 the persistence layer uses MongoDB (Casbah_).
+
+The UI is a very simple `Angular JS`_ application, meant mostly to exercise the API and test out
+features and functionality of the backend.
+
+When deployed locally (or in its most basic Cloud configuration), the frontend is an Nginx_
+reverse proxy, serving the static (HTML / JavaScript) files for all ``/web/*`` URLs; the backend
+runs the `Scala Play`_ server (serving all ``/api/v?/*`` URLs) and finally the data layer
+is composed of a single-instance standalone MongoDB server:
+
+.. image:: docs/images/sentinel-arch-dev-test.png
+    :width: 800px
+    :alt: sentinel architecture
+
+Obviously, this configuration does not provide either High Availability (HA) nor scalability;
+a better way to achieve a basic level of HA (in the face of physical node failures) is to
+deploy two identical nodes (one "main" and the other "backup") and take advantage of either
+AWS's `Elastic Load Balancer`_ (ELB), or Nginx_ if deployed on-premise, to redirect
+traffic to the "backup" node (which becomes the "main" node):
+
+.. image:: docs/images/sentinel-arch-basic-prod.png
+    :width: 800px
+    :alt: sentinel architecture; Basic HA
+
+Even though this provides a basic level of redundancy and thus HA in the face of physical node
+failures, it is still not suitable for high-volume scenarios, where also elastic horizontal
+scaling may be needed.
+
+To achieve full horizontal scalability, we deploy the `MongoDB ReplicaSet`_ in its own cluster,
+while the API servers are deployed in their own `AWS CloudFormation`_-managed cluster:
+
+.. image:: docs/images/sentinel-arch-full-prod.png
+    :width: 800px
+    :alt: sentinel architecture; Basic HA
+
+
+Internal Architecture
++++++++++++++++++++++
+
+``TODO``
+
+
+Users and Organizations
++++++++++++++++++++++++
+
+``TODO``
+
+
+Permissions Management
+++++++++++++++++++++++
+
+``TODO``
+
 
 
 Build & Test
@@ -138,39 +184,43 @@ to create the image (use with ``--help`` to view options).
 
 Once the Docker image is built, it can be run with::
 
-    $ docker run --name sentinel-frontend --link sentinel-dev -p 8080:80 -p 8083:443 -d massenz/sentinel-nginx
+    $ docker run --name sentinel-frontend --link sentinel-dev \
+        -p 8080:80 -p 8083:443 \
+        -d massenz/sentinel-nginx
 
-at this point you can hit the `http://docker-host-ip/` endpoint and see the login screen.
+at this point you can hit the ``http://docker-host-ip/`` endpoint and see the login screen.
 
 SSL (HTTPS) Support
 ^^^^^^^^^^^^^^^^^^^
 
-`Nginx`_ supports SSL termination out of the box, but it requires the creation of a ``X.509`` certificate
-and associated key.
+`Nginx`_ supports SSL termination out of the box, but it requires the creation of a ``X.509``
+certificate and associated key.
 
-Following the instructions from `Digital Ocean`_ we can create both and place them in the ``buil/`` folder
-for the ``build-web-proxy.py`` script to pick::
+Following the instructions from `Digital Ocean`_ we can create both and place them in the
+``build/`` folder for the ``build-web-proxy.py`` script to pick::
 
-    $ sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout build/nginx.key -out build/nginx.crt
+    $ sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+        -keyout build/nginx.key -out build/nginx.crt
 
 In the ``Dockerfile`` they get copied to the appropriate folder in the container::
 
     COPY nginx.crt /etc/nginx/sentinel.crt
     COPY nginx.key /etc/nginx/sentinel.key
 
-If you now try to reach the server on ``https://dockerdev:8083/web/`` the browser will complain (as this one
-is not really a valid certificate, authenticated by a CA) but will eventually relent if you click enough "accept"
-buttons.
+If you now try to reach the server on ``https://dockerdev:8083/web/`` the browser will complain
+(as this one is not really a valid certificate, authenticated by a CA) but will eventually relent
+if you click enough "accept" buttons.
 
-**NOTE** the name of the server used in the URL and the domain given when creating the Cert **MUST match**.
+**NOTE** the name of the server used in the URL and the domain given when creating
+the Cert **MUST match**.
 
 **TODO** this step will eventually be added to the ``build-web-proxy.py``.
 
 Complete deployment
 +++++++++++++++++++
 
-At the end of the process, you should have the following three containers up and running (output simplified
-for readability)::
+At the end of the process, you should have the following three containers up and running (output
+simplified for readability)::
 
     $ docker ps
 
@@ -179,7 +229,8 @@ for readability)::
     massenz/sentinel:0.3     "bin/sentinel"           Up 11 seconds       0.0.0.0:9000->9000/tcp          sentinel-dev
     mongo                    "/entrypoint.sh mongo"   Up 5 hours          0.0.0.0:27017->27017/tcp        mongo-dev
 
-and you can connect to the Sentinel UI on ``http://localhost:8080/web/`` (**note: the trailing slash is important**).
+and you can connect to the Sentinel UI on ``http://localhost:8080/web/``
+(**note: the trailing slash is important**).
 
 
 Configuration
@@ -190,13 +241,13 @@ Currently the main configuration is managed via two files::
     conf/application.conf
     build/override.conf
 
-the latter *must* be moved to the ``conf/`` dir prior to building the docker image (see Deployment_) for its settings
-to be picked up.
+the latter *must* be moved to the ``conf/`` dir prior to building the docker image (see Deployment_)
+for its settings to be picked up.
 
 In the built container, they will be placed in the ``/etc/sentinel`` folder, which is also
 added to the ``CLASSPATH``, so changes to those files will be picked up upon server restart.
 
-**NOTE** copies are also kept in ``/opt/sentinel/conf``, but changes to those will not be
+**NOTE** copies are also kept in ``/opt/sentinel/conf``, but changes to those will **not** be
 reflected in the running server.
 
 The main flags of interest (see the ``application.conf`` file for more details) are::
@@ -210,27 +261,32 @@ The main flags of interest (see the ``application.conf`` file for more details) 
     db_uri = "mongodb://example.com:9999/sentinel-test"
 
 bootstrap.file
-  is the full path of a JSON file that defines users that will be created (or updated) at server start and
-  will be the "seeds" to manage/create more users.
+  is the full path of a JSON file that defines users that will be created (or updated) at server
+  start and will be the "seeds" to manage/create more users.
+
   See the ``conf/bootstrap.json`` file for an example of the format.
 
 signature.validate
-  every API request must be authenticated via an API Key to be passed in the ``Authorization`` header.
-  if this flag is ``false`` there will be no validation step (this is **a serious security vulnerability**).
+  every API request must be authenticated via an API Key to be passed in the ``Authorization``
+  header: if this flag is ``false`` there will be no validation step (this is
+  **a serious security vulnerability**).
+
   The header **must** be of the form::
 
-        Authorization: username=myuser;api-key=abf334uf.....kkafei==
+      Authorization: username=myuser;api-key=abf334uf.....kkafei==
 
   See `API Key`_ for more details.
 
 db_uri
-  This is the location for the MongoDB server and must be in a MongoDb-compatible format (as shown above).
-  This is **not** used for tests; use instead the ``-Dsentinel.test.db_uri`` system property (or, even
-  better, the ``run_tests`` script: see `Build & Test`_).
+  This is the location for the MongoDB server and must be in a MongoDb-compatible format
+  (as shown above).
+
+  This is **not** used for tests; use instead the ``-Dsentinel.test.db_uri`` system property
+  (or, even better, the ``run_tests`` script: see `Build & Test`_).
 
 
-Overrride
-+++++++++
+Override
+++++++++
 
 The preferred way of making changes to the configuration (both during development and in production)
 would be to make changes to the ``overrride.conf`` file and leave the ``application.conf`` file
@@ -246,11 +302,12 @@ See the example in ``override.conf.sample`` -- keep ``override.conf`` outside of
 API Key
 +++++++
 
-For every user, a pseudo-random API Key is generated dynamically (but deterministically) by the server; to retrieve
-a given user key, use the ``/login`` endpoint (see `API Docs`_ for more details on the endpoints).
+For every user, a pseudo-random API Key is generated dynamically (but deterministically) by
+the server; to retrieve a given user key, use the ``/login`` endpoint (see `API Docs`_ for
+more details on the endpoints).
 
-Upon successful authentication with the correct password, the server will respond with the API Key; this can be
-subsequently used for all requests by the same user.
+Upon successful authentication with the correct password, the server will respond with the API Key;
+this can be subsequently used for all requests by the same user.
 
 
 ----
@@ -278,5 +335,11 @@ subsequently used for all requests by the same user.
 .. _Scala Play: https://www.playframework.com
 .. _Casbah: https://mongodb.github.io/casbah/
 .. _sbt docker plugin: http://www.scala-sbt.org/sbt-native-packager/formats/docker.html
+.. _Angular JS:
 
 .. _API Docs: TODO
+
+.. _AWS CloudFormation: https://aws.amazon.com/documentation/cloudformation/
+.. _Elastic Load Balancer: https://aws.amazon.com/elasticloadbalancing/
+
+.. _MongoDB ReplicaSet: https://docs.mongodb.org/manual/tutorial/deploy-replica-set/
