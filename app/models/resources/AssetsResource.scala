@@ -21,6 +21,10 @@ object AssetsResource {
     // TODO: this is relatively easy and, for now, we don't need a specialized serializer
     val body = asset.as[Map[String, String]]
     val name = body.getOrElse("name", "")
+    getAssetByName(name) match {
+      case Some(r) => throw new NotAllowedException(s"Asset '$name' already exists")
+      case _ =>
+    }
     val owner = body.get("owner") match {
       // if not specified, the owner is the same as the creator
       case None => creator
@@ -54,4 +58,8 @@ object AssetsResource {
   }
 
   def remove(id: ObjectId) = dao.remove(id)
+
+  def getAssetByName(name: String) = {
+    dao.findByName(name)
+  }
 }

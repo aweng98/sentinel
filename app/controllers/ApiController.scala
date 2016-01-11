@@ -181,6 +181,7 @@ trait ApiController extends Controller {
   def createAsset() = Authenticated(BodyParsers.parse.json) {
     implicit request =>
       try {
+        Logger.debug(s"Creating asset for user: ${request.user.getCredentials.username}")
         val asset = AssetsResource.create(request.body, request.user)
         Created(Json.toJson(asset)).withHeaders(("Location", asset.path))
       } catch {
