@@ -38,3 +38,6 @@ coveralls.sh
 # Node.js and Jasmine modules
 node_modules/
 
+# Python generated files
+*.pyc
+__pycache__/

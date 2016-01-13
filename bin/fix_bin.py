@@ -21,7 +21,7 @@ import logging
 
 # The `sh` module is super-useful, but not part of the standard python library.
 try:
-    from sh import cp, mv, ErrorReturnCode
+    from sh import chmod, cp, mv, ErrorReturnCode
 except ImportError:
     print("Missing `sh` module; please install with `pip install sh` (use of virtualenv "
           "is strongly recommended)")
@@ -54,13 +54,12 @@ def parse_args():
     return parser.parse_args()
 
 
-def main(cfg):
-    infile = cfg.binfile
+def fix_binfile(src, dest=None):
     _, outfile = mkstemp()
-    logging.info("Updating {} (writing temporary file to {}).".format(infile, outfile))
+    logging.info("Updating {} (writing temporary file to {}).".format(src, outfile))
 
     with open(outfile, 'w') as outf:
-        with open(infile) as inf:
+        with open(src) as inf:
 
             for line in inf:
                 if line.startswith('declare -r app_classpath='):
@@ -68,18 +67,24 @@ def main(cfg):
                 else:
                     outf.write(line)
 
-    if not cfg.outfile:
-        infile_bak = '.'.join([infile, 'bak'])
-        logging.warning("Overwriting original file {} (backup copy in {})".format(
-            infile, infile_bak))
+    if not dest:
+        infile_bak = '.'.join([src, 'orig'])
+        logging.warning("Overwriting original file {} (backup copy kept in {})".format(
+            src, infile_bak))
         try:
-            cp(infile, infile_bak)
+            cp(src, infile_bak)
+            dest = src
         except ErrorReturnCode as error:
             logging.error("Failed to make backup copy of {}; did you have the necessary "
-                          "permissions? (Error: {})".format(infile, error.stderr))
+                          "permissions? (Error: {})".format(src, error.stderr))
             exit(1)
-    dest = cfg.outfile or cfg.binfile
+
     mv(outfile, dest)
+    chmod('ug+x', dest)
+
+
+def main(cfg):
+    fix_binfile(cfg.binfile, cfg.outfile)
 
 
 if __name__ == '__main__':

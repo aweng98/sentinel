@@ -72,7 +72,7 @@ def main(cfg):
     workdir = tempfile.mkdtemp()
     logging.info("Created temporary directory {}".format(workdir))
     tarfile = os.path.join(workdir, 'sentinel-webui.tar.gz')
-    tar("caf", tarfile, '-C', pub_dir, '--exclude-tag-all=NO_EXPORT', '.')
+    tar("cf", tarfile, '-C', pub_dir, '.')
     logging.info("Compressed all public static files to {}".format(tarfile))
 
     # TODO(marco): fix the hard-coded file names
@@ -86,8 +86,8 @@ def main(cfg):
     logging.info("Building docker image...")
     cp(dockerfile, os.path.join(workdir, 'Dockerfile'))
     try:
-        dout = docker('build', '-t', DOCKER_IMAGE, workdir)
-        logging.info(dout)
+        for line in docker('build', '-t', DOCKER_IMAGE, workdir, _iter=True):
+            logging.info(line[:-1])
     except ErrorReturnCode as ex:
         logging.error(ex)
         logging.error("Failed to generate the Docker image")
