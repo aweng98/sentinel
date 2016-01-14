@@ -9,14 +9,35 @@ if [[ -z $(docker-machine ls | grep sentinel) ]]; then
   docker-machine create -d vmwarefusion sentinel
 fi  
 eval $(docker-machine env sentinel)
+DOCKER_IP=$(docker-machine ip sentinel)
 
-# TODO: this assumes virtualenv and a specific one exists.
-workon sentinel
+if [[ -z ${DOCKER_IP} ]]; then
+  echo "ERROR - the Sentinel Docker Machine could not be activated; aborting."
+  exit 1
+fi
 
-./bin/build-web-proxy.py 
-./bin/build-api-server.py 
+echo "The 'sentinel' Docker Machine is now active, and can be reached at ${DOCKER_IP};
+to SSH into it use 'docker-machine ssh sentinel'"
 
-# TODO: stop and remove running containers
+./bin/build-web-proxy.py
+RES=$?
+./bin/build-api-server.py
+
+if [[ $? != 0 || ${RES} != 0 ]]; then
+  echo "ERROR - Could not build containers"
+  exit 1
+fi
+
+for ctr in sentinel-ui sentinel-api mongo-dev; do
+  NAME=$(docker rm $(docker stop $ctr))
+  if [[ $? != 0 ]]; then
+    echo "ERROR - could not stop and remove $ctr."
+    exit 1
+  fi
+  echo "Container ${NAME} stopped and removed"
+done
+
+# TODO: create a data-only container, for the data we want to preserve across runs.
 
 docker run --name mongo-dev -d mongo
 docker run --name sentinel-api -p 9000:9000 -d --link mongo-dev massenz/sentinel-apiserver 
@@ -24,5 +45,7 @@ docker run --name sentinel-api -p 9000:9000 -d --link mongo-dev massenz/sentinel
 #   and is now different from the name of the container. We need to parametize this.
 docker run --link sentinel-api:sentinel-dev --name sentinel-ui -d -p 8080:80 massenz/sentinel-nginx
 
-echo "The API server is now available at http://$(docker-machine ip sentinel):9000"
-echo "The UI can be seen from the browser at: http://$(docker-machine ip sentinel):8080/web/"
+echo "
+The API server is now available at http://${DOCKER_IP}:9000
+The UI can be reached at: http://${DOCKER_IP}:8080/web/
+"
