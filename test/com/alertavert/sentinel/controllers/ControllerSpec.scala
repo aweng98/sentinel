@@ -3,23 +3,16 @@
 
 package com.alertavert.sentinel.controllers
 
-import com.alertavert.sentinel.errors.DbException
-import com.alertavert.sentinel.model.{Resource, Organization, User}
+import com.alertavert.sentinel.TestUtilities
+import com.alertavert.sentinel.model.{Organization, Resource, User}
 import com.alertavert.sentinel.persistence.DataAccessManager
-import com.alertavert.sentinel.persistence.mongodb.{MongoResourceDao, MongoOrganizationDao, MongoUserDao, UserOrgsAssocDao}
+import com.alertavert.sentinel.persistence.mongodb.{MongoOrganizationDao, MongoResourceDao, MongoUserDao}
 import com.alertavert.sentinel.security.Credentials
 import controllers.ApiController
-import models.{UserReads, oidReads, orgReads, orgsWrites}
-import org.bson.types.ObjectId
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll}
 import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
-import play.api.libs.json.{JsArray, JsValue, Json}
 import play.api.mvc.{Controller, Results}
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
-
-import scala.sys.SystemProperties
-import scala.util.Random
 
 /**
  * <h1>API Tests
@@ -32,16 +25,11 @@ import scala.util.Random
 class ControllerSpec extends PlaySpec with Results with OneAppPerSuite with BeforeAndAfterAll
     with BeforeAndAfter {
 
-  // The db_uri for the tests must be configured via a Java property:
-  // sbt test -Dsentinel.test.db_uri="mongodb://my.server:99999/foobar"
-  final val DB_URI_PROPERTY = "sentinel.test.db_uri"
-
-  val sp = new SystemProperties
-  val dbUri = sp.getOrElse(DB_URI_PROPERTY, throw new DbException(s"Java System property $DB_URI_PROPERTY not defined"))
-
-  if (! DataAccessManager.isReady) DataAccessManager.init(dbUri)
-
   var testController: Controller with ApiController = _
+
+  override def beforeAll() = {
+    TestUtilities.initDataManagerForTests()
+  }
 
   override def afterAll() {
     DataAccessManager.db.dropDatabase()
@@ -61,12 +49,11 @@ class ControllerSpec extends PlaySpec with Results with OneAppPerSuite with Befo
     for (i <- 1 to num) yield {
       val username = s"user_$i"
       dao.findByName(username) match {
-        case None => {
+        case None =>
           val user = User.builder(s"User-$i") hasCreds Credentials(username,
             TEST_PASSWORD) build()
           dao << user
           user
-        }
         case Some(user) => user
       }
     }
@@ -85,19 +72,20 @@ class ControllerSpec extends PlaySpec with Results with OneAppPerSuite with Befo
     }
   }
 
-  def makeAsset(): Resource = {
-    val owner = makeUsers(1)(0)
-    val simpleAsset = new Resource("test-res", owner)
+  def makeAsset(name: String = "test-asset"): Resource = {
+    val owner = makeUsers(1).head
+    val simpleAsset = new Resource(name, owner)
     MongoResourceDao() << simpleAsset
     simpleAsset
   }
 
   trait WithControllerAndRequest {
     testController = new Controller with ApiController
-    def fakeRequest(method: String = "GET", route: String = "/") = FakeRequest(method, route)
+    def fakeRequest(method: String = "GET",
+                    route: String = "/",
+                    apiKey: String = "notreallyavalidkey==") = FakeRequest(method, route)
       .withHeaders(
-        ("x-date", "2014-10-05T22:00:00"),
-        ("Authorization", "username=bob;hash=foobar==")
+        ("Authorization", s"username=bob;api-key=${apiKey}")
       )
   }
 }

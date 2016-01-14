@@ -1,6 +1,9 @@
 
+import com.alertavert.sentinel.TestUtilities
 import com.alertavert.sentinel.errors._
+import com.alertavert.sentinel.persistence.DataAccessManager
 import controllers.{ApiController, AppController}
+import play.Logger
 import play.api._
 import play.api.libs.json.Json
 import play.api.mvc._
@@ -85,14 +88,39 @@ object Global extends GlobalSettings {
           | }
         """.stripMargin
     )
-    Logger.error(s"Error binding parameters for ${request.path}: ${error}")
+    Logger.error(s"Error binding parameters for ${request.path}: $error")
     Future.successful(BadRequest(content))
   }
 
   override def onStart(app: Application) {
-    Logger.info("Application has started")
-    ApiController.initialize()
-    AppController.initialize()
+    Logger.info("Sentinel Application started [onStart]")
+
+    // TODO(marco): this is a bit of a hack, to prevent DB initialization during a test run.
+    // This gets called before the test suite has an opportunity to inject the test DB URI, so it
+    // is really not possible to do anything else than "guessing" we are in a test run, and defer
+    // the DB initialization.
+    // This is far from ideal (globals **are** evil!) and one option would be to move the
+    // initialization further down the stack (but I'm currently not sure where to).
+    if (! TestUtilities.isTestRun) {
+      val dbUri = AppController.configuration.dbUri
+      if (!DataAccessManager.isReady) {
+        Logger.info(s"Connecting to database at $dbUri")
+        DataAccessManager.init(dbUri)
+        if (!DataAccessManager.isReady) {
+          Logger.error("Could not start the DataAccessManager, " +
+            s"it is possible that the DB server may be down ($dbUri)")
+          throw new DbException(s"Could not connect to the DB server at $dbUri")
+        }
+      }
+      else Logger.info(s"Database already connected at `${DataAccessManager.db.name}`")
+      Logger.info("Initializing Application Controller...")
+      AppController.initialize()
+      Logger.info("Initializing API Controller...")
+      ApiController.initialize()
+    } else {
+      Logger.info("Test run - Database and Controllers initialization skipped.")
+    }
+    Logger.info("Initialization complete [onStart]")
   }
 
   override def onStop(app: Application) {

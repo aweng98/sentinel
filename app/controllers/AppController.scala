@@ -48,15 +48,14 @@ trait AppController   {
       val json = Source.fromFile(bootstrapFile).getLines().mkString
       val users = Json.parse(json).as[List[Map[String, JsValue]]]
       try {
-        users.foreach(insertUser(_))
+        users.foreach(insertUser)
       } catch {
         // we catch, log and ignore the case of incorrectly initialized users
         case ex: IllegalArgumentException => Logger.error(ex.getLocalizedMessage)
         // other unexpected errors must cause a 'fail fast' condition
-        case ex: Exception => {
+        case ex: Exception =>
           Logger.error(s"Unexpected error: ${ex.getLocalizedMessage} - aborting execution")
           throw new RuntimeException(ex)
-        }
       }
       Logger.debug("Bootstrap complete")
     }
@@ -81,13 +80,13 @@ trait AppController   {
           dao << u
         }
         case None => {
-            val user = User.builder(usr.get("first").map(x => x.as[String]).getOrElse(""),
-                    usr.get("last").map(x => x.as[String]).getOrElse(""))
-              .hasCreds(Credentials(username, password))
-              .setActive(true)
-              .build()
-            Logger.info(s"Inserting new user $user")
-            dao << user
+          val user = User.builder(usr.get("first").map(x => x.as[String]).getOrElse(""),
+                  usr.get("last").map(x => x.as[String]).getOrElse(""))
+            .hasCreds(Credentials(username, password))
+            .setActive(true)
+            .build()
+          Logger.info(s"Inserting new user $user")
+          dao << user
         }
       }
     }

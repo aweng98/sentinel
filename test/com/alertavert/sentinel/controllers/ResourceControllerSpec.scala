@@ -23,8 +23,8 @@ class ResourceControllerSpec extends ControllerSpec {
             owner
               .getCredentials.apiKey
           }")
-      Logger.info(s"Creating Resource [${assetName}] for user '${owner.getCredentials.username}'")
-      val response = call(testController.createAsset, request)
+      Logger.info(s"Creating Resource [$assetName] for user '${owner.getCredentials.username}'")
+      val response = call(testController.createAsset(), request)
       status(response) mustEqual CREATED
 
       // TODO(marco): the following causes a failure on Travis (but works just fine locally)

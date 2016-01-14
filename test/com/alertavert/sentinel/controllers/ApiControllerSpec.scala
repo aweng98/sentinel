@@ -7,19 +7,12 @@ package com.alertavert.sentinel.controllers
 import com.alertavert.sentinel.errors.AuthenticationError
 import com.alertavert.sentinel.model.{Organization, User}
 import com.alertavert.sentinel.persistence.DataAccessManager
-import com.alertavert.sentinel.persistence.mongodb.{UserOrgsAssocDao, MongoOrganizationDao, MongoUserDao}
+import com.alertavert.sentinel.persistence.mongodb.{MongoOrganizationDao, MongoUserDao, UserOrgsAssocDao}
 import com.alertavert.sentinel.security.Credentials
-import controllers.ApiController
 import models.{UserReads, oidReads, orgReads, orgsWrites}
 import org.bson.types.ObjectId
-import org.scalatest.{Ignore, BeforeAndAfter, BeforeAndAfterAll}
-import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
-import play.api.libs.json.{JsValue, JsArray, Json}
-import play.api.mvc.{Controller, Results}
-import play.api.test.FakeRequest
+import play.api.libs.json.{JsArray, JsValue, Json}
 import play.api.test.Helpers._
-
-import scala.util.Random
 
 /**
  * <h1>API Tests
@@ -32,11 +25,14 @@ import scala.util.Random
 class ApiControllerSpec extends ControllerSpec {
 
   before {
-    if (DataAccessManager.isReady) {
-      MongoUserDao().clear()
-      MongoOrganizationDao().clear()
-      UserOrgsAssocDao().collection.drop()
+    assume {
+      DataAccessManager isReady
     }
+
+    MongoUserDao().clear()
+    MongoOrganizationDao().clear()
+    UserOrgsAssocDao().collection.drop()
+
   }
 
   "Sentinel API" should {

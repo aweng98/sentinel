@@ -17,7 +17,7 @@ class ApplicationSpec extends PlaySpec with OneAppPerSuite {
       val dbUri = app.configuration.getString("db_uri")
       dbUri match {
         case None => fail("No MongoDB URI found in configuration")
-        case Some(s) => s.startsWith("mongodb://")
+        case Some(s) => s.startsWith("mongodb://") must be(right = true)
       }
     }
   }

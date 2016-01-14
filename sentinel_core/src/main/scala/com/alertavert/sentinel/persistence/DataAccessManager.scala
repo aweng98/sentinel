@@ -45,8 +45,9 @@ object DataAccessManager {
     }
 
     val mongoUri = MongoURI(dbUri)
-    val dbName = mongoUri.database.getOrElse(throw new IllegalArgumentException("MongoDB URI must" +
-      " specify a database name (use: mongodb://host[:port]/database"))
+    val dbName = mongoUri.database.getOrElse(
+        throw new IllegalArgumentException(
+            "MongoDB URI must specify a database name (use: mongodb://host[:port]/database"))
     log.info(s"Connecting to MongoDB on $dbUri")
     conn = MongoConnection(mongoUri)
     db = conn.getDB(dbName)

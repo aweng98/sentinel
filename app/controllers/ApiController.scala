@@ -19,15 +19,6 @@ trait ApiController extends Controller {
 
     def initialize() {
       Logger.info("API Controller started")
-      val dbUri = AppController.configuration.dbUri
-      if (!DataAccessManager.isReady) {
-        DataAccessManager.init(dbUri)
-        if (!DataAccessManager.isReady) {
-          Logger.error("Could not start the DataAccessManager, " +
-            s"it is possible that the DB server may be down ($dbUri)")
-          throw new DbException(s"Could not connect to the DB server at $dbUri")
-        }
-      }
     }
 
     def users = Authenticated { implicit request =>
