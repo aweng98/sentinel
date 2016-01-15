@@ -13,14 +13,15 @@ import org.scalatest.BeforeAndAfter
  *
  * Created by marco on 10/13/14.
  */
-class UserOrgsAssocDaoTest extends UnitSpec with BeforeAndAfter {
+class UserOrgsAssocDaoTest extends UnitSpec {
 
-  val dao: UserOrgsAssocDao = UserOrgsAssocDao()
+  var dao: UserOrgsAssocDao = _
 
   before {
-    val coll = dao.collection
-    coll.dropCollection()
-    assume(coll.count() == 0, "Association collections User-Orgs should be empty prior to test")
+    dao = UserOrgsAssocDao()
+    dao.collection.dropCollection()
+    assume(dao.collection.count() == 0,
+           "Association collections User-Orgs should be empty prior to test")
   }
 
   trait WithUserAndOrgs {

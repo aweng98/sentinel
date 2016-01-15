@@ -3,7 +3,6 @@
 
 package com.alertavert.sentinel.controllers
 
-import com.alertavert.sentinel.TestUtilities
 import com.alertavert.sentinel.model.{Organization, Resource, User}
 import com.alertavert.sentinel.persistence.DataAccessManager
 import com.alertavert.sentinel.persistence.mongodb.{MongoOrganizationDao, MongoResourceDao, MongoUserDao}
@@ -27,11 +26,9 @@ class ControllerSpec extends PlaySpec with Results with OneAppPerSuite with Befo
 
   var testController: Controller with ApiController = _
 
-  override def beforeAll() = {
-    TestUtilities.initDataManagerForTests()
-  }
-
   override def afterAll() {
+    // TODO(marco): use a -D system property to prevent the database being dropped
+    // (useful for debug sessions)
     DataAccessManager.db.dropDatabase()
   }
 

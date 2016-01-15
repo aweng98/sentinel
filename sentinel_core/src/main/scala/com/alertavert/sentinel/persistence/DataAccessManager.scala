@@ -43,7 +43,7 @@ object DataAccessManager {
       // val oldUri = conn.getAddress().toString
       throw new DbException(s"Data Manager already initialized")
     }
-
+    log.info(s"Initializing the DataAccessManager with DB at URI: [$dbUri]")
     val mongoUri = MongoURI(dbUri)
     val dbName = mongoUri.database.getOrElse(
         throw new IllegalArgumentException(

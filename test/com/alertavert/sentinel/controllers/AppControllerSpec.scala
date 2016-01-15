@@ -3,10 +3,7 @@
 
 package com.alertavert.sentinel.controllers
 
-import com.alertavert.sentinel.TestUtilities
-import com.alertavert.sentinel.persistence.DataAccessManager
 import controllers.AppController
-import org.scalatest.BeforeAndAfterAll
 import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import play.api.mvc.{Controller, Results}
 import play.api.test.FakeRequest
@@ -16,10 +13,7 @@ import play.api.test.Helpers._
  * Minimalist set of tests against the app correctly serving the UI.
  * Javascript UI is tested separately using Karma/Jasmine frameworks.
  */
-class AppControllerSpec extends PlaySpec with Results with OneAppPerSuite with BeforeAndAfterAll {
-
-  override def beforeAll() =
-    TestUtilities.initDataManagerForTests()
+class AppControllerSpec extends PlaySpec with Results with OneAppPerSuite {
 
   class TestController() extends Controller with AppController
 

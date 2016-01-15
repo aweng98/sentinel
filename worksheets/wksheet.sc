@@ -3,12 +3,13 @@
  *
  * Created by marco on 2/10/14.
  */
+
+import java.io.FileInputStream
+import java.util.Properties
 import com.alertavert.sentinel.model._
 import com.alertavert.sentinel.security.{Edit, Grant, Action, Credentials}
 import java.security.MessageDigest
-
 import org.bson.types.ObjectId
-
 def saltToBytes(salt: Long): Array[Byte] = {
   val numBytes = for {
     i <- 0 until 8
@@ -16,33 +17,27 @@ def saltToBytes(salt: Long): Array[Byte] = {
 
   numBytes toArray
 }
-
 def bytesToHexString(bytes: Array[Byte]) = {
   bytes.reverse.map(x => f"$x%02X").mkString
 }
 // 0x00AF = 175
 bytesToHexString(saltToBytes(175))
-
 val builder = User.builder("marco")
-
 val marco = builder.withId(new ObjectId("53fd79f5e4b0be5b2144c836"))
                    .hasCreds("marco", "foobaz", 3345)
                    .setActive()
                    .build()
-
 println(marco)
 val md = MessageDigest.getInstance("SHA-256")
 val digest = md.digest(saltToBytes(175).toArray)
 bytesToHexString(digest)
 // hashed pwd was 'zekret' and seed 175
 val creds = new Credentials("marc", Credentials.hashPwd("zekret", 175), 175)
-
 creds.saltToString
 creds.hashedPassword
 creds.apiKey
 // JSON serializers
 import play.api.libs.json._
-
 implicit val credsWrites = new Writes[Credentials] {
   def writes(creds: Credentials) = Json.obj(
     "username" -> creds.username,
@@ -62,14 +57,12 @@ implicit val userWrites = new Writes[User] {
 }
 
 val json = Json.toJson(marco)
-
 val myDict = Map(
   "foo" -> "33",
   "bar" -> "baz"
 )
 
 Json.toJson(myDict)
-
 val jsArr = """[{"id": 2, "name": "Joe"}, {"id": 3, "name": "Bob"}]"""
 val jsonRepr = Json.toJson(jsArr)
 def activity(day: String) {
@@ -81,7 +74,16 @@ def activity(day: String) {
 }
 
 List("Mon", "Tue", "Fri").foreach { activity }
-
 val dud = None
-
 dud.map(x => s"$x is now").filter(_ startsWith "foo").map(_.toUpperCase)
+System.getProperty("java.home", "default")
+val prop: Properties = new Properties()
+prop.load(new FileInputStream(
+  "/Users/marco/development/sentinel/conf/tests.conf"))
+prop.getProperty("db_uri")
+
+val foo: String = {
+  "foobar"
+}
+
+print(foo)
