@@ -19,4 +19,4 @@ before_install:
 #script: "sbt coverage test coveralls"
 
 # TODO(marco): replace this call with running our own test runner (./bin/run_tests.sh)
-script: sbt coverage test coverageAggregate -Dsentinel.test.db_uri="mongodb://localhost/sentinel-test"
+script: sbt coverage test coverageAggregate -Dconfig.file="conf/tests.conf"
