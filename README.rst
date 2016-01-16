@@ -117,9 +117,15 @@ To build it (and run unit tests) the easiest way is to use a helper script::
 
     $ ./bin/run_tests.sh
 
-optionally passing in the server address/hostname for a MongoDB server
-(or you can use the ``SENTINEL_MONGO`` env var to pass that in (see below
-Deployment_ for more info).
+This will require a Configuration_ file for the tests that we expect to be placed in::
+
+    ${HOME}/.sentinel/tests.conf
+
+this file is not under source control and contains values that are specific to the local
+environment (development); the easiest way to create it is to copy the ``conf/tests.conf``
+file and adjust its values.
+
+To run correctly, the tests need an active MongoDB server; see Deployment_ for more details.
 
 
 Deployment
@@ -133,23 +139,27 @@ the only supported way of deploying and running (even locally).
 
 **TODO** We should really use Docker Compose for the following, this will change soon.
 
+A very temporary solution has been implemented in ``bin/run_service.sh`` to automate
+the process below, with a few supporting Python scripts to build the docker images;
+**use with caution** as it has not been tested and will probably break without some
+adjustment to your development environment.
+
 MongoDB
 +++++++
 
 ``Sentinel`` requires a backing MongoDB server, whose address needs to be configured via
 the ``db_uri`` flag in the ``application.conf`` file (see Configuration_ below).
 
-When running tests, the server's address is instead picked via a Java System property
-(this is all handled by the ``run_tests`` script, see `Build & Test`_ above).
+When running tests, the server's address should be defined via the ``db_uri``
+property in the ``${HOME}/.sentinel/tests.conf`` configuration file
+(see the ``bin/run_tests.sh`` script).
 
-To run a MongoDB server, just use the default container from `DockerHub Mongo image`_::
+To run a MongoDB server, just use the default container from `DockerHub Mongo image`_
+using, for example::
 
     $ docker run -p 27017:27017 --name mongo-dev mongo
 
-(going forward we will remove the ``-p`` flag and either use the ``-P``, or do away with
-this altogether, and use the new Docker Networking).
-
-In any event, this gives access to a ``mongod`` on ``localhost:27017`` (the default).
+which gives access to a ``mongod`` on ``localhost:27017`` (the default).
 
 API Server (Sentinel)
 +++++++++++++++++++++
@@ -157,38 +167,35 @@ API Server (Sentinel)
 This is slightly more convoluted, mostly due to the use of `sbt docker plugin`_, which is
 not very well documented and has several limitations[1]_.
 
-**TODO** Create a script to automate the below
+The full build process is in ``bin/build-api-server.py`` and results in a Docker image::
 
-::
-    $ sbt docker:stage
-    $ cd target/docker
-    $ cp ../../build/sentinel.Dockerfile ./
+    DOCKER_IMAGE = 'massenz/sentinel-apiserver'
 
-    # Note the version is entered manually - this WILL change
-    $ docker build --file sentinel.Dockerfile -t massenz/sentinel:0.3 .
+**TODO** add versioning.
 
-    # You can add -d and drop the --rm if you want to run this in the background
-    $ docker run --link mongo-dev -p 9000:9000 --name sentinel-dev --rm massenz/sentinel:0.3
+During the image build process, we amend the ``bin/sentinel`` launch script, by altering
+the ``CLASSPATH``, using the ``build/fix_bin.py`` script.
 
-This connects this container to the previously launched instance of ``mongod`` and exposes
-port 9000 on ``localhost`` to access ``Sentinel``.
+**TODO** this may no longer be necessary; we could use a ``-Dconfiguration.file``
+directive instead.
 
 Nginx (front-end)
 +++++++++++++++++
 
 This step is not strictly necessary for development/testing, as the UI is served by the Play server
-too -- however, this is how it will be deploye in Production eventually.
+too; however, this is how it will be deployed in Production eventually.
 
 The base image is at `DockerHub Nginx image`_; use the script in ``build/build-web-proxy.py``
 to create the image (use with ``--help`` to view options).
 
 Once the Docker image is built, it can be run with::
 
-    $ docker run --name sentinel-frontend --link sentinel-dev \
+    $ docker run --name sentinel-frontend --link sentinel-api \
         -p 8080:80 -p 8083:443 \
         -d massenz/sentinel-nginx
 
-at this point you can hit the ``http://docker-host-ip/`` endpoint and see the login screen.
+at this point the login screen should be reachable at ``http://<docker-host-ip>:8080/web/``.
+
 
 SSL (HTTPS) Support
 ^^^^^^^^^^^^^^^^^^^
@@ -207,27 +214,33 @@ In the ``Dockerfile`` they get copied to the appropriate folder in the container
     COPY nginx.crt /etc/nginx/sentinel.crt
     COPY nginx.key /etc/nginx/sentinel.key
 
-If you now try to reach the server on ``https://dockerdev:8083/web/`` the browser will complain
-(as this one is not really a valid certificate, authenticated by a CA) but will eventually relent
-if you click enough "accept" buttons.
+If you now try to reach the server on ``https://<docker-host-ip>:8083/web/`` the browser
+will complain (as this one is not really a valid certificate, authenticated by a CA)
+but will eventually relent if you click enough "accept" buttons.
 
 **NOTE** the name of the server used in the URL and the domain given when creating
 the Cert **MUST match**.
 
-**TODO** this step will eventually be added to the ``build-web-proxy.py``.
+**TODO** This step will eventually be added to the ``build-web-proxy.py``, but with a valid cert.
+
 
 Complete deployment
 +++++++++++++++++++
 
-At the end of the process, you should have the following three containers up and running (output
-simplified for readability)::
+The whole process is currently automated via::
 
+    bin/run_service.sh
+
+but, as noted above, this is still **very experimental**.
+
+If all goes well, you should be able to see the running containers::
+
+    $ eval $(docker-machine env sentinel)
     $ docker ps
-
-    IMAGE                    COMMAND                  STATUS              PORTS                           NAMES
-    massenz/sentinel-nginx   "nginx -g 'daemon off"   Up 3 seconds        443/tcp, 0.0.0.0:8080->80/tcp   sentinel-frontend
-    massenz/sentinel:0.3     "bin/sentinel"           Up 11 seconds       0.0.0.0:9000->9000/tcp          sentinel-dev
-    mongo                    "/entrypoint.sh mongo"   Up 5 hours          0.0.0.0:27017->27017/tcp        mongo-dev
+    CONTAINER ID IMAGE                        COMMAND                 PORTS                          NAMES
+    e70ebbaa94f7 massenz/sentinel-nginx       "nginx -g 'daemon off"  443/tcp, 0.0.0.0:8080->80/tcp  sentinel-ui
+    92219c39c25c massenz/sentinel-apiserver   "bin/sentinel"          0.0.0.0:9000->9000/tcp         sentinel-api
+    ed10483c75d6 mongo                        "/entrypoint.sh mongo"  27017/tcp                      mongo-dev
 
 and you can connect to the Sentinel UI on ``http://localhost:8080/web/``
 (**note: the trailing slash is important**).

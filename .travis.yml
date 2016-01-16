@@ -18,5 +18,4 @@ before_install:
 # see: https://github.com/scoverage/sbt-coveralls/issues/28
 #script: "sbt coverage test coveralls"
 
-# TODO(marco): replace this call with running our own test runner (./bin/run_tests.sh)
-script: sbt coverage test coverageAggregate -Dconfig.file="conf/tests.conf"
+script: sbt coverage test coverageAggregate -Dconfig.file="conf/travis-ci.conf"
