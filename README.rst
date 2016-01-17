@@ -112,12 +112,9 @@ Permissions Management
 Build & Test
 ------------
 
-This is an SBT project and is managed and built via ``sbt``.
-To build it (and run unit tests) the easiest way is to use a helper script::
+This is an SBT project and is managed and built via sbt_.
 
-    $ ./bin/run_tests.sh
-
-This will require a Configuration_ file for the tests that we expect to be placed in::
+Tests require a Configuration_ file that we expect to be placed in::
 
     ${HOME}/.sentinel/tests.conf
 
@@ -125,7 +122,40 @@ this file is not under source control and contains values that are specific to t
 environment (development); the easiest way to create it is to copy the ``conf/tests.conf``
 file and adjust its values.
 
-To run correctly, the tests need an active MongoDB server; see Deployment_ for more details.
+- on Linux::
+
+    mkdir ~/.sentinel
+    # The provided tests.conf already points to `localhost`,
+    # no modifications necessary.
+    cp conf/tests.conf ~/.sentinel/
+
+    docker run -p 27017:27017 -d --name mongo-dev mongo
+    bin/run_tests.sh
+
+- on OS X, install `Docker Machine`_ and create a ``sentinel`` machine::
+
+    mkdir ~/.sentinel
+    cp conf/tests.conf ~/.sentinel/
+
+    docker-machine create sentinel
+    eval $(docker-machine env sentinel)
+    docker run -p 27017:27017 -d --name mongo-dev mongo
+
+    # Edit `db_uri` in tests.conf to point to:
+    docker-machine ip sentinel
+    vim ~/.sentinel/tests.conf
+
+    bin/run_tests.sh
+
+Instead of using the helper script, you can run ``sbt`` directly, if you want to
+for example add other steps (or change the location of the configuration file)::
+
+    $ sbt -Dconfig.file="${HOME}/configs/sentinel.conf" clean coverage \
+        coverageAggregate test
+
+To build it (and run unit tests) the easiest way is to use a helper script::
+
+    $ ./bin/run_tests.sh
 
 
 Deployment
@@ -347,8 +377,9 @@ this can be subsequently used for all requests by the same user.
 
 .. _Scala Play: https://www.playframework.com
 .. _Casbah: https://mongodb.github.io/casbah/
+.. _sbt: http://www.scala-sbt.org/
 .. _sbt docker plugin: http://www.scala-sbt.org/sbt-native-packager/formats/docker.html
-.. _Angular JS:
+.. _Angular JS: https://angularjs.org/
 
 .. _API Docs: TODO
 
