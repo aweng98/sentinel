@@ -36,7 +36,7 @@ class AppControllerSpec extends PlaySpec with Results with OneAppPerSuite {
     "be ready and render the UI page" in {
       val testController = new TestController
       val indexResult = testController.index().apply(FakeRequest())
-      contentAsString(indexResult) must include("<a href=\"/web/index.html\">Sentinel UI</a>")
+      contentAsString(indexResult) must include("""<a href="/web/index.html">Sentinel UI</a>""")
     }
   }
 }
